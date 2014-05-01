@@ -1,5 +1,6 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+
+#ifndef WINDOWS_MAIN_WINDOW_H_
+#define WINDOWS_MAIN_WINDOW_H_
 
 #include <QMainWindow>
 
@@ -10,22 +11,21 @@ class MainWindow;
 class QNetworkReply;
 class TasksModel;
 
-class MainWindow : public QMainWindow
-{
-    Q_OBJECT
+class MainWindow : public QMainWindow {
+  Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = 0);
-    ~MainWindow();
+  explicit MainWindow(QWidget *parent = 0);
+  ~MainWindow();
 
 private slots:
-    void on_updateButton_clicked();
-    void onNetworkReply(QNetworkReply* reply);
+  void on_updateButton_clicked();
+  void onNetworkReply(QNetworkReply* reply);
 
 private:
-    Ui::MainWindow *ui;
+  Ui::MainWindow *ui;
 
-    TasksModel* m_tasksModel;
+  TasksModel* m_tasksModel;
 };
 
-#endif // MAINWINDOW_H
+#endif  // WINDOWS_MAIN_WINDOW_H_

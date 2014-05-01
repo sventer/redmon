@@ -1,5 +1,5 @@
 
-QT += core gui network xml
+QT += core gui widgets network xml
 
 TARGET = src
 TEMPLATE = app
