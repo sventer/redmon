@@ -2,25 +2,26 @@
 #ifndef WINDOWS_MAIN_WINDOW_H_
 #define WINDOWS_MAIN_WINDOW_H_
 
-#include <QMainWindow>
+#include <QWidget>
 
 class QNetworkReply;
 class QTableView;
 class TasksModel;
 
-class MainWindow : public QMainWindow {
+class MainWindow : public QWidget {
   Q_OBJECT
 
 public:
-  explicit MainWindow(QWidget *parent = 0);
+  explicit MainWindow(QWidget* parent = 0);
   virtual ~MainWindow();
 
+  void updateIssues();
+
 private slots:
-  void on_updateButton_clicked();
   void onNetworkReply(QNetworkReply* reply);
 
 private:
-  QTableView* m_taskList;
+  QTableView* m_issuesList;
 
   TasksModel* m_tasksModel;
 };

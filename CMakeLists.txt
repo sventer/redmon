@@ -10,4 +10,10 @@ file(GLOB_RECURSE redmon_SOURCE_FILES "src/*.cpp" "src/*.h")
 include_directories("src")
 
 add_executable("RedMon" WIN32 MACOSX_BUNDLE ${redmon_SOURCE_FILES})
-target_link_libraries("RedMon" Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Network Qt5::Xml)
+target_link_libraries("RedMon"
+  ${Qt5Core_LIBRARIES}
+  ${Qt5Gui_LIBRARIES}
+  ${Qt5Widgets_LIBRARIES}
+  ${Qt5Network_LIBRARIES}
+  ${Qt5Xml_LIBRARIES}
+)
