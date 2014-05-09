@@ -12,7 +12,7 @@
 #include <QTableView>
 #include <QBoxLayout>
 
-#include "models/tasks_model.h"
+#include "models/issues_model.h"
 
 MainWindow::MainWindow(QWidget* parent) : QWidget(parent) {
   m_issuesList = new QTableView(this);

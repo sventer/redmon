@@ -1,4 +1,4 @@
-#include "models/tasks_model.h"
+#include "models/issues_model.h"
 
 #include <QVariant>
 
