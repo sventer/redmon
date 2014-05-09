@@ -1,5 +1,5 @@
+
 #include "windows/main_window.h"
-#include "ui_main_window.h"
 
 #include <QDebug>
 #include <QNetworkAccessManager>
@@ -9,29 +9,32 @@
 #include <QXmlStreamReader>
 #include <QDomDocument>
 #include <QDomElement>
+#include <QTableView>
 
 #include <QStandardItemModel>
 
 #include "models/tasks_model.h"
 
-MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow)
-{
-    ui->setupUi(this);
+MainWindow::MainWindow(QWidget *parent)
+  : QMainWindow(parent) {
+  m_taskList = new QTableView(this);
+
+  setCentralWidget(m_taskList);
+
+  on_updateButton_clicked();
 }
 
-MainWindow::~MainWindow()
-{
-    delete ui;
+MainWindow::~MainWindow() {
 }
 
-void MainWindow::on_updateButton_clicked()
-{
+void MainWindow::on_updateButton_clicked() {
     QNetworkAccessManager* manager = new QNetworkAccessManager(this);
     connect(manager, SIGNAL(finished(QNetworkReply*)), SLOT(onNetworkReply(QNetworkReply*)));
 
-    manager->get(QNetworkRequest(QUrl("http://redmine.playsafesa.com/issues.xml?key=aad507500298994cd06c224d649f1453fbb44c78")));
+    QString apiKey("aad507500298994cd06c224d649f1453fbb44c78");
+    QString url("http://redmine.playsafesa.com/issues.xml?key=%1&limit=100");
+
+    manager->get(QNetworkRequest(QUrl(url.arg(apiKey))));
 }
 
 void MainWindow::onNetworkReply(QNetworkReply* reply) {
@@ -58,9 +61,10 @@ void MainWindow::onNetworkReply(QNetworkReply* reply) {
             }
         }
 
+        if (issue.assignedTo() == "Tiaan Louw")
         issues.append(issue);
     }
 
-    delete ui->taskList->model();
-    ui->taskList->setModel(new TasksModel(issues, this));
+    delete m_taskList->model();
+    m_taskList->setModel(new TasksModel(issues, this));
 }

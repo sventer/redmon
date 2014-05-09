@@ -4,11 +4,8 @@
 
 #include <QMainWindow>
 
-namespace Ui {
-class MainWindow;
-}
-
 class QNetworkReply;
+class QTableView;
 class TasksModel;
 
 class MainWindow : public QMainWindow {
@@ -16,14 +13,14 @@ class MainWindow : public QMainWindow {
 
 public:
   explicit MainWindow(QWidget *parent = 0);
-  ~MainWindow();
+  virtual ~MainWindow();
 
 private slots:
   void on_updateButton_clicked();
   void onNetworkReply(QNetworkReply* reply);
 
 private:
-  Ui::MainWindow *ui;
+  QTableView* m_taskList;
 
   TasksModel* m_tasksModel;
 };
