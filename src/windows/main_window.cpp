@@ -11,19 +11,23 @@
 #include <QDomElement>
 #include <QTableView>
 #include <QBoxLayout>
+#include <QPushButton>
 
 #include "models/issues_model.h"
 
 MainWindow::MainWindow(QWidget* parent) : QWidget(parent) {
+  // Create controls.
   m_issuesList = new QTableView(this);
+  QPushButton* updateButton = new QPushButton("Update");
+  connect(updateButton, SIGNAL(clicked()), this, SLOT(onUpdateButtonClicked()));
 
-  QHBoxLayout* mainLayout = new QHBoxLayout(this);
+  // Set up the main layout.
 
+  QVBoxLayout* mainLayout = new QVBoxLayout(this);
   mainLayout->addWidget(m_issuesList);
+  mainLayout->addWidget(updateButton);
 
   setLayout(mainLayout);
-
-  updateIssues();
 }
 
 MainWindow::~MainWindow() {}
@@ -38,6 +42,8 @@ void MainWindow::updateIssues() {
 
   manager->get(QNetworkRequest(QUrl(url.arg(apiKey))));
 }
+
+void MainWindow::onUpdateButtonClicked() { updateIssues(); }
 
 void MainWindow::onNetworkReply(QNetworkReply* reply) {
   QByteArray data = reply->read(reply->bytesAvailable());

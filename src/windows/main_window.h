@@ -18,6 +18,7 @@ public:
   void updateIssues();
 
 private slots:
+  void onUpdateButtonClicked();
   void onNetworkReply(QNetworkReply* reply);
 
 private:
