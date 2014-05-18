@@ -1,4 +1,4 @@
-redmon
+RedMon
 ======
 
-Redmine client
+Redmine client.
