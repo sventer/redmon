@@ -4,9 +4,9 @@
 
 #include <QWidget>
 
+class QListView;
 class QNetworkReply;
-class QTableView;
-class TasksModel;
+class QPushButton;
 
 class MainWindow : public QWidget {
   Q_OBJECT
@@ -22,9 +22,8 @@ private slots:
   void onNetworkReply(QNetworkReply* reply);
 
 private:
-  QTableView* m_issuesList;
-
-  TasksModel* m_tasksModel;
+  QPushButton* m_updateButton;
+  QListView* m_issuesList;
 };
 
 #endif  // WINDOWS_MAIN_WINDOW_H_

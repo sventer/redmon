@@ -5,8 +5,9 @@ AlignEscapedNewlinesLeft: false
 AllowAllParametersOfDeclarationOnNextLine: true
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
-#AllowShortFunctionsOnASingleLine: true
+AllowShortFunctionsOnASingleLine: true
 ConstructorInitializerAllOnOneLineOrOnePerLine: false
 ConstructorInitializerIndentWidth: 2
-
-
+DerivePointerBinding: false
+PointerBindsToType: true
+IndentCaseLabels: false

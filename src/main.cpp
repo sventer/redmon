@@ -1,15 +1,12 @@
 #include <QApplication>
 
 #include "windows/main_window.h"
-#include "windows/graphics_window.h"
 
-int main(int argc, char *argv[])
-{
-    QApplication a(argc, argv);
-    MainWindow w;
-    w.show();
-    GraphicsWindow gw;
-    gw.show();
+int main(int argc, char* argv[]) {
+  QApplication a(argc, argv);
 
-    return a.exec();
+  MainWindow w;
+  w.show();
+
+  return a.exec();
 }

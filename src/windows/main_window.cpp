@@ -1,31 +1,64 @@
 
 #include "windows/main_window.h"
 
-#include <QDebug>
+#include <QBoxLayout>
+#include <QListView>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
-#include <QUrl>
-#include <QXmlStreamReader>
-#include <QDomDocument>
-#include <QDomElement>
-#include <QTableView>
-#include <QBoxLayout>
 #include <QPushButton>
+#include <QUrl>
 
+#include "data/data.h"
+#include "data/data_loader.h"
 #include "models/issues_model.h"
+#include "models/issue_list_item_delegate.h"
 
 MainWindow::MainWindow(QWidget* parent) : QWidget(parent) {
-  // Create controls.
-  m_issuesList = new QTableView(this);
-  QPushButton* updateButton = new QPushButton("Update");
-  connect(updateButton, SIGNAL(clicked()), this, SLOT(onUpdateButtonClicked()));
+  Issue issue;
 
-  // Set up the main layout.
+  issue.id = 1;
+  issue.subject = "This is a long subject";
+  issue.projectName = "Project 1";
+  Data::Get().issues.append(issue);
+
+  issue.id = 2;
+  issue.subject = "This is another long subject for testing purposes";
+  issue.projectName = "Project 1";
+  Data::Get().issues.append(issue);
+
+  issue.id = 3;
+  issue.subject = "This is another long subject";
+  issue.projectName = "Another Project";
+  Data::Get().issues.append(issue);
+
+  // Create controls.
+
+  m_issuesList = new QListView(this);
+  m_issuesList->setFrameShape(QFrame::NoFrame);
+  m_issuesList->setResizeMode(QListView::Adjust);
+  m_issuesList->setItemDelegate(new IssueListItemDelegate);
+  m_issuesList->setModel(new IssuesModel);
+
+  QPushButton* settingsButton = new QPushButton("Settings");
+
+  m_updateButton = new QPushButton("Update");
+  connect(m_updateButton, SIGNAL(clicked()), this,
+          SLOT(onUpdateButtonClicked()));
+
+  // Set up the layouts.
+
+  QHBoxLayout* buttonsLayout = new QHBoxLayout;
+  buttonsLayout->setMargin(5);
+  buttonsLayout->setSpacing(5);
+  buttonsLayout->addWidget(settingsButton);
+  buttonsLayout->addWidget(m_updateButton);
 
   QVBoxLayout* mainLayout = new QVBoxLayout(this);
+  mainLayout->setMargin(0);
+  mainLayout->setSpacing(0);
+  mainLayout->addLayout(buttonsLayout);
   mainLayout->addWidget(m_issuesList);
-  mainLayout->addWidget(updateButton);
 
   setLayout(mainLayout);
 }
@@ -43,36 +76,34 @@ void MainWindow::updateIssues() {
   manager->get(QNetworkRequest(QUrl(url.arg(apiKey))));
 }
 
-void MainWindow::onUpdateButtonClicked() { updateIssues(); }
+void MainWindow::onUpdateButtonClicked() {
+  // Set the update button to a disabled state.
+  m_updateButton->setText("Updating...");
+  m_updateButton->setEnabled(false);
+
+  // Start the process to update the issues.
+  updateIssues();
+}
 
 void MainWindow::onNetworkReply(QNetworkReply* reply) {
   QByteArray data = reply->read(reply->bytesAvailable());
 
+  // Create the XML document.
   QDomDocument document;
   document.setContent(data);
 
-  IssuesModel::ListType issues;
-
+  // Get the root element.
   QDomElement root = document.firstChildElement("issues");
-  for (QDomElement issueElem = root.firstChildElement("issue");
-       !issueElem.isNull(); issueElem = issueElem.nextSiblingElement("issue")) {
-    Issue issue;
-    QDomElement subject = issueElem.firstChildElement("subject");
-    if (!subject.isNull()) {
-      issue.setSubject(subject.text());
-    }
 
-    QDomElement assignedTo = issueElem.firstChildElement("assigned_to");
-    if (!assignedTo.isNull()) {
-      QDomAttr nameAttr = assignedTo.attributeNode("name");
-      if (!nameAttr.isNull()) {
-        issue.setAssignedTo(nameAttr.value());
-      }
-    }
+  // Parse the XML into a temp vector.
+  QVector<Issue> issues;
+  parseIssues(root, &issues);
+  Data::Get().issues.swap(issues);
 
-    issues.append(issue);
-  }
+  // Reset the issues list to update it.
+  m_issuesList->reset();
 
-  delete m_issuesList->model();
-  m_issuesList->setModel(new IssuesModel(issues, this));
+  // Set the update button back to an enabled state.
+  m_updateButton->setText("Update");
+  m_updateButton->setEnabled(true);
 }

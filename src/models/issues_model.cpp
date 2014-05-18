@@ -2,48 +2,43 @@
 
 #include <QVariant>
 
-IssuesModel::IssuesModel(QObject* parent) : QAbstractListModel(parent) {}
+#include "data/data.h"
 
-IssuesModel::IssuesModel(const ListType& issues, QObject* parent)
-  : QAbstractListModel(parent), m_issues(issues) {}
+IssuesModel::IssuesModel(QObject* parent) : QAbstractListModel(parent) {}
 
 int IssuesModel::rowCount(const QModelIndex& parent) const {
   if (parent.isValid())
     return 0;
 
-  return m_issues.count();
+  return Data::Get().issues.size();
 }
 
 QModelIndex IssuesModel::sibling(int row, int column,
                                  const QModelIndex& idx) const {
-  if (!idx.isValid() || column != 0 || row >= m_issues.count())
+  if (!idx.isValid() || column != 0 || row >= Data::Get().issues.size())
     return QModelIndex();
 
-  return createIndex(row, 0);
+  return createIndex(row, column);
 }
 
-int IssuesModel::columnCount(const QModelIndex& parent) const { return 2; }
+int IssuesModel::columnCount(const QModelIndex& parent) const { return 1; }
 
 QVariant IssuesModel::data(const QModelIndex& index, int role) const {
-  if (index.row() < 0 || index.row() >= m_issues.size())
+  if (index.row() < 0 || index.row() >= Data::Get().issues.size())
     return QVariant();
 
-  if (role == Qt::DisplayRole || role == Qt::EditRole) {
-    const Issue& issue = m_issues.at(index.row());
+  if (role == Qt::DisplayRole) {
+    const Issue& issue = Data::Get().issues.at(index.row());
 
-    if (index.column() == 0)
-      return issue.subject();
-    else if (index.column() == 1)
-      return issue.assignedTo();
+    switch (index.column()) {
+    case 0:
+      return issue.subject;
+    }
   }
 
   return QVariant();
 }
 
-const IssuesModel::ListType& IssuesModel::issues() const { return m_issues; }
-
-void IssuesModel::setIssues(const ListType& issues) {
-  emit beginResetModel();
-  m_issues = issues;
-  emit endResetModel();
+const Issue& IssuesModel::issue(const QModelIndex& index) const {
+  return Data::Get().issues.at(index.row());
 }

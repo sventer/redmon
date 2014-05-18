@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 2.8.11)
 project(RedMon)
 
 set(CMAKE_AUTOMOC ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 find_package(Qt5 COMPONENTS Core Gui Widgets Network Xml REQUIRED)
 
 file(GLOB_RECURSE redmon_SOURCE_FILES "src/*.cpp" "src/*.h")

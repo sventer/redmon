@@ -3,21 +3,18 @@
 
 #include <QString>
 
-class Issue
-{
-public:
-    Issue();
-    ~Issue();
+struct Issue {
+  Issue() : id(0) {}
+  ~Issue() {}
 
-    const QString& subject() const { return m_subject; }
-    void setSubject(const QString& subject);
+  int id;
+  QString subject;
 
-    const QString& assignedTo() const { return m_assignedTo; }
-    void setAssignedTo(const QString& assignedTo);
+  int assignedToId;
+  QString assignedToName;
 
-private:
-    QString m_subject;
-    QString m_assignedTo;
+  int projectId;
+  QString projectName;
 };
 
-#endif // ISSUE_H
+#endif  // ISSUE_H
