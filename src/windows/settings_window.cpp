@@ -19,33 +19,28 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef WINDOWS_MAIN_WINDOW_H_
-#define WINDOWS_MAIN_WINDOW_H_
+#include "windows/settings_window.h"
 
-#include <QWidget>
+#include <QGridLayout>
+#include <QPushButton>
+#include <QLabel>
+#include <QLineEdit>
 
-class QListView;
-class QNetworkReply;
-class QPushButton;
+SettingsWindow::SettingsWindow(QWidget* parent) : QDialog(parent) {
 
-class MainWindow : public QWidget {
-  Q_OBJECT
+  QLineEdit* serverUrlEdit = new QLineEdit;
 
-public:
-  explicit MainWindow(QWidget* parent = 0);
-  virtual ~MainWindow();
+  QLineEdit* apiKeyEdit = new QLineEdit;
 
-  void updateIssues();
+  // Set up the layout.
+  QGridLayout* mainLayout = new QGridLayout;
+  mainLayout->addWidget(new QLabel("Server URL"), 0, 0);
+  mainLayout->addWidget(serverUrlEdit, 1, 0);
 
-private slots:
-  void onSettingsButtonClicked();
-  void onUpdateButtonClicked();
-  void onNetworkReply(QNetworkReply* reply);
+  mainLayout->addWidget(new QLabel("API Key"), 0, 1);
+  mainLayout->addWidget(apiKeyEdit, 1, 1);
 
-private:
-  QPushButton* m_settingsButton;
-  QPushButton* m_updateButton;
-  QListView* m_issuesList;
-};
+  setLayout(mainLayout);
+}
 
-#endif  // WINDOWS_MAIN_WINDOW_H_
+SettingsWindow::~SettingsWindow() {}

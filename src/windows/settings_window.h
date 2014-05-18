@@ -19,33 +19,21 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef WINDOWS_MAIN_WINDOW_H_
-#define WINDOWS_MAIN_WINDOW_H_
+#ifndef WINDOWS_SETTINGS_WINDOW_H_
+#define WINDOWS_SETTINGS_WINDOW_H_
 
-#include <QWidget>
+#include <QDialog>
 
-class QListView;
-class QNetworkReply;
-class QPushButton;
-
-class MainWindow : public QWidget {
+class SettingsWindow : public QDialog {
   Q_OBJECT
 
 public:
-  explicit MainWindow(QWidget* parent = 0);
-  virtual ~MainWindow();
-
-  void updateIssues();
+  explicit SettingsWindow(QWidget* parent = 0);
+  virtual ~SettingsWindow();
 
 private slots:
-  void onSettingsButtonClicked();
-  void onUpdateButtonClicked();
-  void onNetworkReply(QNetworkReply* reply);
 
 private:
-  QPushButton* m_settingsButton;
-  QPushButton* m_updateButton;
-  QListView* m_issuesList;
 };
 
-#endif  // WINDOWS_MAIN_WINDOW_H_
+#endif  // WINDOWS_SETTINGS_WINDOW_H_

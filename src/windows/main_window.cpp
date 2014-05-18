@@ -33,6 +33,7 @@
 #include "data/data_loader.h"
 #include "models/issues_model.h"
 #include "models/issue_list_item_delegate.h"
+#include "windows/settings_window.h"
 
 MainWindow::MainWindow(QWidget* parent) : QWidget(parent) {
   Issue issue;
@@ -60,7 +61,9 @@ MainWindow::MainWindow(QWidget* parent) : QWidget(parent) {
   m_issuesList->setItemDelegate(new IssueListItemDelegate);
   m_issuesList->setModel(new IssuesModel);
 
-  QPushButton* settingsButton = new QPushButton("Settings");
+  m_settingsButton = new QPushButton("Settings");
+  connect(m_settingsButton, SIGNAL(clicked()), this,
+          SLOT(onSettingsButtonClicked()));
 
   m_updateButton = new QPushButton("Update");
   connect(m_updateButton, SIGNAL(clicked()), this,
@@ -71,7 +74,7 @@ MainWindow::MainWindow(QWidget* parent) : QWidget(parent) {
   QHBoxLayout* buttonsLayout = new QHBoxLayout;
   buttonsLayout->setMargin(5);
   buttonsLayout->setSpacing(5);
-  buttonsLayout->addWidget(settingsButton);
+  buttonsLayout->addWidget(m_settingsButton);
   buttonsLayout->addWidget(m_updateButton);
 
   QVBoxLayout* mainLayout = new QVBoxLayout(this);
@@ -94,6 +97,12 @@ void MainWindow::updateIssues() {
   QString url("http://redmine.playsafesa.com/issues.xml?key=%1&limit=100");
 
   manager->get(QNetworkRequest(QUrl(url.arg(apiKey))));
+}
+
+void MainWindow::onSettingsButtonClicked() {
+  SettingsWindow settingsWindow(this);
+  settingsWindow.setModal(true);
+  settingsWindow.exec();
 }
 
 void MainWindow::onUpdateButtonClicked() {
