@@ -24,7 +24,10 @@
 
 #include <QWidget>
 
+#include "data/issue.h"
+
 class QListView;
+class QNetworkAccessManager;
 class QNetworkReply;
 class QPushButton;
 
@@ -35,17 +38,24 @@ public:
   explicit MainWindow(QWidget* parent = 0);
   virtual ~MainWindow();
 
-  void updateIssues();
-
 private slots:
   void onSettingsButtonClicked();
   void onUpdateButtonClicked();
   void onNetworkReply(QNetworkReply* reply);
 
 private:
+  void updateIssues(int page = 1, int assignedToId = 1);
+
+  QNetworkAccessManager* m_issuesManager;
+  int m_lastPage;
+
   QPushButton* m_settingsButton;
   QPushButton* m_updateButton;
   QListView* m_issuesList;
+
+  QVector<Issue> m_tempIssues;
+
+  Q_DISABLE_COPY(MainWindow)
 };
 
 #endif  // WINDOWS_MAIN_WINDOW_H_

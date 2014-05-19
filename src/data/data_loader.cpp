@@ -26,8 +26,6 @@
 void parseIssues(const QDomElement& root, QVector<Issue>* issues) {
   Q_ASSERT(issues);
 
-  issues->clear();
-
   for (QDomElement issueElem = root.firstChildElement("issue");
        !issueElem.isNull(); issueElem = issueElem.nextSiblingElement("issue")) {
     Issue issue;

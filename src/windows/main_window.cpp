@@ -22,6 +22,7 @@
 #include "windows/main_window.h"
 
 #include <QBoxLayout>
+#include <QDebug>
 #include <QListView>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
@@ -35,7 +36,14 @@
 #include "models/issue_list_item_delegate.h"
 #include "windows/settings_window.h"
 
-MainWindow::MainWindow(QWidget* parent) : QWidget(parent) {
+const size_t kIssuesPerPage = 50;
+
+MainWindow::MainWindow(QWidget* parent) : QWidget(parent), m_lastPage(0) {
+  // Create the NAM that we will use to retrieve the issues.
+  m_issuesManager = new QNetworkAccessManager(this);
+  connect(m_issuesManager, SIGNAL(finished(QNetworkReply*)),
+          SLOT(onNetworkReply(QNetworkReply*)));
+
   Issue issue;
 
   issue.id = 1;
@@ -88,17 +96,6 @@ MainWindow::MainWindow(QWidget* parent) : QWidget(parent) {
 
 MainWindow::~MainWindow() {}
 
-void MainWindow::updateIssues() {
-  QNetworkAccessManager* manager = new QNetworkAccessManager(this);
-  connect(manager, SIGNAL(finished(QNetworkReply*)),
-          SLOT(onNetworkReply(QNetworkReply*)));
-
-  QString apiKey("aad507500298994cd06c224d649f1453fbb44c78");
-  QString url("http://redmine.playsafesa.com/issues.xml?key=%1&limit=100");
-
-  manager->get(QNetworkRequest(QUrl(url.arg(apiKey))));
-}
-
 void MainWindow::onSettingsButtonClicked() {
   SettingsWindow settingsWindow(this);
   settingsWindow.setModal(true);
@@ -110,29 +107,63 @@ void MainWindow::onUpdateButtonClicked() {
   m_updateButton->setText("Updating...");
   m_updateButton->setEnabled(false);
 
+  m_tempIssues.clear();
+
   // Start the process to update the issues.
   updateIssues();
 }
 
 void MainWindow::onNetworkReply(QNetworkReply* reply) {
-  QByteArray data = reply->read(reply->bytesAvailable());
+  qDebug() << "onNetworkReply(...)";
+
+  QByteArray data(reply->read(reply->bytesAvailable()));
 
   // Create the XML document.
   QDomDocument document;
   document.setContent(data);
 
   // Get the root element.
-  QDomElement root = document.firstChildElement("issues");
+  QDomElement root(document.firstChildElement("issues"));
 
   // Parse the XML into a temp vector.
-  QVector<Issue> temp;
-  parseIssues(root, &temp);
-  Data::Get().issues.swap(temp);
+  size_t issuesBefore = m_tempIssues.size();
+  parseIssues(root, &m_tempIssues);
 
-  // Reset the issues list to update it.
-  m_issuesList->reset();
+  bool doNextPage = (m_tempIssues.size() - issuesBefore) == kIssuesPerPage;
 
-  // Set the update button back to an enabled state.
-  m_updateButton->setText("Update");
-  m_updateButton->setEnabled(true);
+  if (doNextPage) {
+    updateIssues(m_lastPage + 1);
+  } else {
+    m_lastPage = 0;
+
+    Data::Get().issues.swap(m_tempIssues);
+
+    // Reset the issues list to update it.
+    m_issuesList->reset();
+
+    // Set the update button back to an enabled state.
+    m_updateButton->setText("Update");
+    m_updateButton->setEnabled(true);
+  }
+}
+
+void MainWindow::updateIssues(int page, int assignedToId) {
+  qDebug() << "updateIssues(" << page << ")";
+
+  m_lastPage = page;
+
+  QString apiKey("aad507500298994cd06c224d649f1453fbb44c78");
+  QString url(
+      "http://redmine.playsafesa.com/issues.xml?key=%1&limit=%2&page=%3");
+  url = url.arg(apiKey).arg(kIssuesPerPage).arg(page);
+
+  if (assignedToId == 1) {
+    url.append("&assigned_to_id=me");
+  } else if (assignedToId > 0) {
+    url.append("&assigned_to_id=").append(assignedToId);
+  }
+
+  qDebug() << "Requesting URL:" << url;
+
+  m_issuesManager->get(QNetworkRequest(QUrl(url)));
 }
