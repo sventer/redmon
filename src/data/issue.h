@@ -31,11 +31,14 @@ struct Issue {
   int id;
   QString subject;
 
-  int assignedToId;
-  QString assignedToName;
-
   int projectId;
   QString projectName;
+
+  int priorityId;
+  QString priorityName;
+
+  int assignedToId;
+  QString assignedToName;
 };
 
 #endif  // ISSUE_H

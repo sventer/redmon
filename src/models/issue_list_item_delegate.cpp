@@ -73,10 +73,18 @@ void IssueListItemDelegate::paint(QPainter* painter,
   // Adjust the drawRect for painting the project name.
   drawRect.setTop(drawRect.top() + kTextSpacing + textRect.height());
 
-  // Draw the project name.
+  // Draw the info line.
+  QStringList items;
+  if (!issue.projectName.isEmpty())
+    items.append(issue.projectName);
+  if (!issue.priorityName.isEmpty())
+    items.append(issue.priorityName);
+
+  QString infoLine(items.join(", "));
+
   painter->setPen(darkGrayPen);
   painter->setFont(getProjectNameFont(option.font));
-  painter->drawText(drawRect, Qt::TextWordWrap, issue.projectName, &textRect);
+  painter->drawText(drawRect, Qt::TextWordWrap, infoLine, &textRect);
 
   painter->restore();
 }

@@ -154,7 +154,8 @@ void MainWindow::updateIssues(int page, int assignedToId) {
 
   QString apiKey("aad507500298994cd06c224d649f1453fbb44c78");
   QString url(
-      "http://redmine.playsafesa.com/issues.xml?key=%1&limit=%2&page=%3");
+      "http://redmine.playsafesa.com/issues.xml?"
+      "key=%1&limit=%2&page=%3&sort=priority:desc,id:desc");
   url = url.arg(apiKey).arg(kIssuesPerPage).arg(page);
 
   if (assignedToId == 1) {
