@@ -27,9 +27,11 @@
 #include "data/issue.h"
 
 class QListView;
+class QModeEvent;
 class QNetworkAccessManager;
 class QNetworkReply;
 class QPushButton;
+class QResizeEvent;
 
 class MainWindow : public QWidget {
   Q_OBJECT
@@ -42,6 +44,10 @@ private slots:
   void onSettingsButtonClicked();
   void onUpdateButtonClicked();
   void onNetworkReply(QNetworkReply* reply);
+
+protected:
+  void moveEvent(QMoveEvent* event);
+  void resizeEvent(QResizeEvent* event);
 
 private:
   void updateIssues(int page = 1, int assignedToId = 1);

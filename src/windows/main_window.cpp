@@ -24,10 +24,13 @@
 #include <QBoxLayout>
 #include <QDebug>
 #include <QListView>
+#include <QMoveEvent>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QPushButton>
+#include <QResizeEvent>
+#include <QSettings>
 #include <QUrl>
 
 #include "data/data.h"
@@ -39,6 +42,12 @@
 const size_t kIssuesPerPage = 50;
 
 MainWindow::MainWindow(QWidget* parent) : QWidget(parent), m_lastPage(0) {
+  // Position the window to the last place we stored it at.
+  QSettings settings;
+  QPoint mainWindowPos(settings.value("mainWindowPos").toPoint());
+  QSize mainWindowSize(settings.value("mainWindowSize").toSize());
+  setGeometry(QRect(mainWindowPos, mainWindowSize));
+
   // Create the NAM that we will use to retrieve the issues.
   m_issuesManager = new QNetworkAccessManager(this);
   connect(m_issuesManager, SIGNAL(finished(QNetworkReply*)),
@@ -145,6 +154,20 @@ void MainWindow::onNetworkReply(QNetworkReply* reply) {
     m_updateButton->setText("Update");
     m_updateButton->setEnabled(true);
   }
+}
+
+void MainWindow::moveEvent(QMoveEvent* event) {
+  QWidget::moveEvent(event);
+
+  QSettings settings;
+  settings.setValue("mainWindowPos", event->pos());
+}
+
+void MainWindow::resizeEvent(QResizeEvent* event) {
+  QWidget::resizeEvent(event);
+
+  QSettings settings;
+  settings.setValue("mainWindowSize", event->size());
 }
 
 void MainWindow::updateIssues(int page, int assignedToId) {

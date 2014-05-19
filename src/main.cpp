@@ -24,10 +24,14 @@
 #include "windows/main_window.h"
 
 int main(int argc, char* argv[]) {
-  QApplication a(argc, argv);
+  QApplication app(argc, argv);
+
+  app.setOrganizationName("RedMon");
+  // app.setOrganizationDomain("redmon.org");
+  app.setApplicationName("RedMon");
 
   MainWindow w;
   w.show();
 
-  return a.exec();
+  return app.exec();
 }
