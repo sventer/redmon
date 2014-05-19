@@ -125,9 +125,9 @@ void MainWindow::onNetworkReply(QNetworkReply* reply) {
   QDomElement root = document.firstChildElement("issues");
 
   // Parse the XML into a temp vector.
-  QVector<Issue> issues;
-  parseIssues(root, &issues);
-  Data::Get().issues.swap(issues);
+  QVector<Issue> temp;
+  parseIssues(root, &temp);
+  Data::Get().issues.swap(temp);
 
   // Reset the issues list to update it.
   m_issuesList->reset();

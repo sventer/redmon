@@ -18,3 +18,8 @@ target_link_libraries("RedMon"
   ${Qt5Network_LIBRARIES}
   ${Qt5Xml_LIBRARIES}
 )
+
+set_target_properties("RedMon" PROPERTIES
+  MACOSX_BUNDLE_INFO_PLIST
+  "${PROJECT_SOURCE_DIR}/cmake/MacOSXBundleInfo.plist.in"
+)

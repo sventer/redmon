@@ -47,8 +47,7 @@ void IssueListItemDelegate::paint(QPainter* painter,
   QRect textRect;
 
   QPen darkGrayPen(QColor(96, 96, 96));
-  QBrush backgroundBrush(QColor(232, 232, 232));
-  QBrush selectedBackgroundBrush(QColor(200, 200, 200));
+  QBrush backgroundBrush(QColor(240, 240, 240));
 
   // Calculate the drawRect with only the margin applied.
   QRect drawRect = option.rect.adjusted(kItemMarginSize, kItemMarginSize,
@@ -56,11 +55,11 @@ void IssueListItemDelegate::paint(QPainter* painter,
 
   // Draw the backgrond rect.
   painter->setPen(QPen(Qt::NoPen));
-  if (option.state & QStyle::State_Selected)
-    painter->setBrush(selectedBackgroundBrush);
-  else
+
+  if (option.state & QStyle::State_Selected) {
     painter->setBrush(backgroundBrush);
-  painter->drawRoundedRect(drawRect, 5.0, 5.0);
+    painter->drawRect(option.rect);
+  }
 
   // Adjust the drawRect to include the item border.
   drawRect.adjust(kItemBorderSize, kItemBorderSize, -kItemBorderSize,

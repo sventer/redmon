@@ -53,6 +53,16 @@ void parseIssues(const QDomElement& root, QVector<Issue>* issues) {
         if (!nameAttr.isNull())
           issue.projectName = nameAttr.value();
       }
+
+      if (elem.tagName() == "assigned_to") {
+        QDomAttr idAttr = elem.attributeNode("id");
+        if (!idAttr.isNull())
+          issue.assignedToId = idAttr.value().toInt();
+
+        QDomAttr nameAttr = elem.attributeNode("name");
+        if (!nameAttr.isNull())
+          issue.assignedToName = nameAttr.value();
+      }
     }
 
     issues->append(issue);

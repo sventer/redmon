@@ -21,6 +21,7 @@
 
 #include "windows/settings_window.h"
 
+#include <QDebug>
 #include <QGridLayout>
 #include <QPushButton>
 #include <QLabel>
@@ -32,15 +33,22 @@ SettingsWindow::SettingsWindow(QWidget* parent) : QDialog(parent) {
 
   QLineEdit* apiKeyEdit = new QLineEdit;
 
+  QPushButton* updateButton = new QPushButton("Update");
+  connect(updateButton, SLOT(pressed()), this, SIGNAL(onUpdateButtonClicked()));
+
   // Set up the layout.
   QGridLayout* mainLayout = new QGridLayout;
   mainLayout->addWidget(new QLabel("Server URL"), 0, 0);
-  mainLayout->addWidget(serverUrlEdit, 1, 0);
+  mainLayout->addWidget(serverUrlEdit, 0, 1);
 
-  mainLayout->addWidget(new QLabel("API Key"), 0, 1);
+  mainLayout->addWidget(new QLabel("API Key"), 1, 0);
   mainLayout->addWidget(apiKeyEdit, 1, 1);
+
+  mainLayout->addWidget(updateButton, 2, 1);
 
   setLayout(mainLayout);
 }
 
 SettingsWindow::~SettingsWindow() {}
+
+void SettingsWindow::onUpdateButtonClicked() { qDebug() << "Balllas"; }

@@ -32,6 +32,7 @@ public:
   virtual ~SettingsWindow();
 
 private slots:
+  void onUpdateButtonClicked();
 
 private:
 };
