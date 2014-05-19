@@ -24,6 +24,8 @@
 
 #include <QDialog>
 
+class QLineEdit;
+
 class SettingsWindow : public QDialog {
   Q_OBJECT
 
@@ -35,6 +37,8 @@ private slots:
   void onUpdateButtonClicked();
 
 private:
+  QLineEdit* m_serverUrlEdit;
+  QLineEdit* m_apiKeyEdit;
 };
 
 #endif  // WINDOWS_SETTINGS_WINDOW_H_

@@ -26,12 +26,15 @@
 #include <QPushButton>
 #include <QLabel>
 #include <QLineEdit>
+#include <QSettings>
 
 SettingsWindow::SettingsWindow(QWidget* parent) : QDialog(parent) {
+  QSettings settings;
 
-  QLineEdit* serverUrlEdit = new QLineEdit;
+  // Create controls.
 
-  QLineEdit* apiKeyEdit = new QLineEdit;
+  m_serverUrlEdit = new QLineEdit(settings.value("serverUrl").toString());
+  m_apiKeyEdit = new QLineEdit(settings.value("apiKey").toString());
 
   QPushButton* updateButton = new QPushButton("Update");
   connect(updateButton, SLOT(pressed()), this, SIGNAL(onUpdateButtonClicked()));
@@ -39,16 +42,20 @@ SettingsWindow::SettingsWindow(QWidget* parent) : QDialog(parent) {
   // Set up the layout.
   QGridLayout* mainLayout = new QGridLayout;
   mainLayout->addWidget(new QLabel("Server URL"), 0, 0);
-  mainLayout->addWidget(serverUrlEdit, 0, 1);
+  mainLayout->addWidget(m_serverUrlEdit, 0, 1);
 
   mainLayout->addWidget(new QLabel("API Key"), 1, 0);
-  mainLayout->addWidget(apiKeyEdit, 1, 1);
+  mainLayout->addWidget(m_apiKeyEdit, 1, 1);
 
   mainLayout->addWidget(updateButton, 2, 1);
 
   setLayout(mainLayout);
 }
 
-SettingsWindow::~SettingsWindow() {}
+SettingsWindow::~SettingsWindow() {
+  QSettings settings;
+  settings.setValue("serverUrl", m_serverUrlEdit->text());
+  settings.setValue("apiKey", m_apiKeyEdit->text());
+}
 
 void SettingsWindow::onUpdateButtonClicked() { qDebug() << "Balllas"; }
