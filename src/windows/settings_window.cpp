@@ -22,7 +22,7 @@
 #include "windows/settings_window.h"
 
 #include <QDebug>
-#include <QGridLayout>
+#include <QFormLayout>
 #include <QPushButton>
 #include <QLabel>
 #include <QLineEdit>
@@ -37,19 +37,18 @@ SettingsWindow::SettingsWindow(QWidget* parent) : QDialog(parent) {
   m_apiKeyEdit = new QLineEdit(settings.value("apiKey").toString());
 
   QPushButton* updateButton = new QPushButton("Update");
-  connect(updateButton, SLOT(pressed()), this, SIGNAL(onUpdateButtonClicked()));
+  connect(updateButton, SIGNAL(clicked()), this, SLOT(onUpdateButtonClicked()));
 
   // Set up the layout.
-  QGridLayout* mainLayout = new QGridLayout;
-  mainLayout->addWidget(new QLabel("Server URL"), 0, 0);
-  mainLayout->addWidget(m_serverUrlEdit, 0, 1);
 
-  mainLayout->addWidget(new QLabel("API Key"), 1, 0);
-  mainLayout->addWidget(m_apiKeyEdit, 1, 1);
+  QFormLayout* formLayout = new QFormLayout;
+  //formLayout->setSizeConstraint(QLayout::SetFixedSize);
 
-  mainLayout->addWidget(updateButton, 2, 1);
+  formLayout->addRow(new QLabel("Server URL"), m_serverUrlEdit);
+  formLayout->addRow(new QLabel("API Key"), m_apiKeyEdit);
+  formLayout->addRow(NULL, updateButton);
 
-  setLayout(mainLayout);
+  setLayout(formLayout);
 }
 
 SettingsWindow::~SettingsWindow() {
@@ -58,4 +57,6 @@ SettingsWindow::~SettingsWindow() {
   settings.setValue("apiKey", m_apiKeyEdit->text());
 }
 
-void SettingsWindow::onUpdateButtonClicked() { qDebug() << "Balllas"; }
+void SettingsWindow::onUpdateButtonClicked() { 
+  close();
+}
