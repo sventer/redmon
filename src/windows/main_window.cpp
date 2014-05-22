@@ -40,7 +40,8 @@
 #include "models/issue_list_item_delegate.h"
 #include "windows/settings_window.h"
 
-MainWindow::MainWindow(QWidget* parent) : QWidget(parent), m_dataLoader(NULL) {
+MainWindow::MainWindow(QWidget* parent)
+  : QWidget(parent), m_isTrackingTime(false) {
   // Position the window to the last place we stored it at.
   QSettings settings;
   QPoint mainWindowPos(settings.value("mainWindowPos").toPoint());
@@ -71,12 +72,6 @@ MainWindow::MainWindow(QWidget* parent) : QWidget(parent), m_dataLoader(NULL) {
 
   // Create controls.
 
-  m_issuesList = new QListView(this);
-  m_issuesList->setFrameShape(QFrame::NoFrame);
-  m_issuesList->setResizeMode(QListView::Adjust);
-  m_issuesList->setItemDelegate(new IssueListItemDelegate);
-  m_issuesList->setModel(new IssuesModel);
-
   m_settingsButton = new QPushButton("Settings");
   connect(m_settingsButton, SIGNAL(clicked()), this,
           SLOT(onSettingsButtonClicked()));
@@ -85,6 +80,23 @@ MainWindow::MainWindow(QWidget* parent) : QWidget(parent), m_dataLoader(NULL) {
   connect(m_updateButton, SIGNAL(clicked()), this,
           SLOT(onUpdateButtonClicked()));
 
+  m_startButton = new QPushButton("Start");
+  connect(m_startButton, SIGNAL(clicked()), this, SLOT(onStartButtonClicked()));
+
+  m_stopButton = new QPushButton("Stop");
+  connect(m_stopButton, SIGNAL(clicked()), this, SLOT(onStopButtonClicked()));
+  m_stopButton->hide();
+
+  m_issuesList = new QListView(this);
+  m_issuesList->setFrameShape(QFrame::NoFrame);
+  m_issuesList->setResizeMode(QListView::Adjust);
+  m_issuesList->setItemDelegate(new IssueListItemDelegate);
+  m_issuesList->setModel(new IssuesModel);
+  connect(
+      m_issuesList->selectionModel(),
+      SIGNAL(currentChanged(const QModelIndex&, const QModelIndex&)), this,
+      SLOT(onIssuesListCurrentChanged(const QModelIndex&, const QModelIndex&)));
+
   // Set up the layouts.
 
   QHBoxLayout* buttonsLayout = new QHBoxLayout;
@@ -92,6 +104,8 @@ MainWindow::MainWindow(QWidget* parent) : QWidget(parent), m_dataLoader(NULL) {
   buttonsLayout->setSpacing(5);
   buttonsLayout->addWidget(m_settingsButton);
   buttonsLayout->addWidget(m_updateButton);
+  buttonsLayout->addWidget(m_startButton);
+  buttonsLayout->addWidget(m_stopButton);
 
   QVBoxLayout* mainLayout = new QVBoxLayout(this);
   mainLayout->setMargin(0);
@@ -148,6 +162,38 @@ void MainWindow::onUpdateButtonClicked() {
   m_dataLoader->loadData();
 }
 
+void MainWindow::onStartButtonClicked() {
+  // If we are already tracking time, don't do anything.
+  if (m_isTrackingTime)
+    return;
+
+  // If there is nothing selected in the issue list, don't do anything.
+  QItemSelectionModel* selection = m_issuesList->selectionModel();
+  if (!selection || !selection->hasSelection())
+    return;
+
+  // Swap the buttons out.
+  m_startButton->hide();
+  m_stopButton->show();
+
+  // Get the issue.
+  IssuesModel* model = static_cast<IssuesModel*>(m_issuesList->model());
+  const Issue& issue = model->issue(selection->currentIndex());
+
+  // Start.
+  startTrackingTime(issue.id);
+}
+
+void MainWindow::onStopButtonClicked() {
+  // If we are not tracking time, don't do anything.
+  if (!m_isTrackingTime)
+    return;
+
+  // Swap the buttons out.
+  m_startButton->show();
+  m_stopButton->hide();
+}
+
 void MainWindow::onDataLoaderFinished() {
   qDebug() << "MainWindow::onIssuesLoaded()";
 
@@ -169,6 +215,11 @@ void MainWindow::onIssueListTimerTimeout() {
   onUpdateButtonClicked();
 }
 
+void MainWindow::onIssuesListCurrentChanged(const QModelIndex& current,
+                                  const QModelIndex& previous) {
+  qDebug() << current;
+}
+
 void MainWindow::startTimer() {
   QSettings settings;
 
@@ -186,4 +237,12 @@ void MainWindow::stopTimer() {
     qDebug() << "Stopping timer";
     m_issueListTimer->stop();
   }
+}
+
+void MainWindow::startTrackingTime(int issueId) {
+  qDebug() << "Tracking time for:" << issueId;
+}
+
+void MainWindow::stopTrackingTime() {
+  qDebug() << "Stop tracking time";
 }

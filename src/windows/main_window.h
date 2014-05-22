@@ -27,6 +27,7 @@
 #include "data/issue.h"
 
 class QListView;
+class QListWidgetItem;
 class QModeEvent;
 class QNetworkAccessManager;
 class QNetworkReply;
@@ -50,16 +51,27 @@ protected:
 private slots:
   void onSettingsButtonClicked();
   void onUpdateButtonClicked();
+  void onStartButtonClicked();
+  void onStopButtonClicked();
+
   void onDataLoaderFinished();
   void onIssueListTimerTimeout();
+  void onIssuesListCurrentChanged(const QModelIndex& current,
+                                  const QModelIndex& previous);
 
 private:
   void startTimer();
   void stopTimer();
 
+  void startTrackingTime(int issueId);
+  void stopTrackingTime();
+
   // Controls.
   QPushButton* m_settingsButton;
   QPushButton* m_updateButton;
+  QPushButton* m_startButton;
+  QPushButton* m_stopButton;
+
   QListView* m_issuesList;
 
   // The worker object we use to load our issues from the server.
@@ -67,6 +79,9 @@ private:
 
   // The timer we use to update the issue list.
   QTimer* m_issueListTimer;
+
+  // Set to true if we are currently tracking time.
+  bool m_isTrackingTime;
 
   Q_DISABLE_COPY(MainWindow)
 };
