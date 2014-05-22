@@ -33,6 +33,8 @@ class QNetworkReply;
 class QPushButton;
 class QResizeEvent;
 
+class DataLoader;
+
 class MainWindow : public QWidget {
   Q_OBJECT
 
@@ -43,23 +45,20 @@ public:
 private slots:
   void onSettingsButtonClicked();
   void onUpdateButtonClicked();
-  void onNetworkReply(QNetworkReply* reply);
+  void onIssuesLoaded();
 
 protected:
   void moveEvent(QMoveEvent* event);
   void resizeEvent(QResizeEvent* event);
 
 private:
-  void updateIssues(int page = 1, int assignedToId = 1);
-
-  QNetworkAccessManager* m_issuesManager;
-  int m_lastPage;
-
+  // Controls.
   QPushButton* m_settingsButton;
   QPushButton* m_updateButton;
   QListView* m_issuesList;
 
-  QVector<Issue> m_tempIssues;
+  // The worker object we use to load our issues from the server.
+  DataLoader* m_dataLoader;
 
   Q_DISABLE_COPY(MainWindow)
 };

@@ -41,17 +41,16 @@
 
 const size_t kIssuesPerPage = 50;
 
-MainWindow::MainWindow(QWidget* parent) : QWidget(parent), m_lastPage(0) {
+MainWindow::MainWindow(QWidget* parent) : QWidget(parent), m_dataLoader(NULL) {
   // Position the window to the last place we stored it at.
   QSettings settings;
   QPoint mainWindowPos(settings.value("mainWindowPos").toPoint());
   QSize mainWindowSize(settings.value("mainWindowSize").toSize());
   setGeometry(QRect(mainWindowPos, mainWindowSize));
 
-  // Create the NAM that we will use to retrieve the issues.
-  m_issuesManager = new QNetworkAccessManager(this);
-  connect(m_issuesManager, SIGNAL(finished(QNetworkReply*)),
-          SLOT(onNetworkReply(QNetworkReply*)));
+  // Create and link up the worker object that will load our issues for us.
+  m_dataLoader = new DataLoader(this);
+  connect(m_dataLoader, SIGNAL(issuesLoaded()), this, SLOT(onIssuesLoaded()));
 
   Issue issue;
 
@@ -116,44 +115,22 @@ void MainWindow::onUpdateButtonClicked() {
   m_updateButton->setText("Updating...");
   m_updateButton->setEnabled(false);
 
-  m_tempIssues.clear();
-
-  // Start the process to update the issues.
-  updateIssues();
+  // Start loading the issues.
+  m_dataLoader->loadData();
 }
 
-void MainWindow::onNetworkReply(QNetworkReply* reply) {
-  qDebug() << "onNetworkReply(...)";
+void MainWindow::onIssuesLoaded() {
+  qDebug() << "MainWindow::onIssuesLoaded()";
 
-  QByteArray data(reply->read(reply->bytesAvailable()));
+  // Swap the data from the worker into the real issues data.
+  m_dataLoader->swapIssues(&Data::Get().issues);
 
-  // Create the XML document.
-  QDomDocument document;
-  document.setContent(data);
+  // Reset the issues list to update it.
+  m_issuesList->reset();
 
-  // Get the root element.
-  QDomElement root(document.firstChildElement("issues"));
-
-  // Parse the XML into a temp vector.
-  size_t issuesBefore = m_tempIssues.size();
-  parseIssues(root, &m_tempIssues);
-
-  bool doNextPage = (m_tempIssues.size() - issuesBefore) == kIssuesPerPage;
-
-  if (doNextPage) {
-    updateIssues(m_lastPage + 1);
-  } else {
-    m_lastPage = 0;
-
-    Data::Get().issues.swap(m_tempIssues);
-
-    // Reset the issues list to update it.
-    m_issuesList->reset();
-
-    // Set the update button back to an enabled state.
-    m_updateButton->setText("Update");
-    m_updateButton->setEnabled(true);
-  }
+  // Set the update button back to an enabled state.
+  m_updateButton->setText("Update");
+  m_updateButton->setEnabled(true);
 }
 
 void MainWindow::moveEvent(QMoveEvent* event) {
@@ -168,29 +145,4 @@ void MainWindow::resizeEvent(QResizeEvent* event) {
 
   QSettings settings;
   settings.setValue("mainWindowSize", event->size());
-}
-
-void MainWindow::updateIssues(int page, int assignedToId) {
-  qDebug() << "updateIssues(" << page << ")";
-
-  m_lastPage = page;
-
-  QSettings settings;
-  QString url(
-      "http://%1/issues.xml?"
-      "key=%2&limit=%3&page=%4&sort=priority:desc,id:desc");
-  url = url.arg(settings.value("serverUrl").toString())
-            .arg(settings.value("apiKey").toString())
-            .arg(kIssuesPerPage)
-            .arg(page);
-
-  if (assignedToId == 1) {
-    url.append("&assigned_to_id=me");
-  } else if (assignedToId > 0) {
-    url.append("&assigned_to_id=").append(assignedToId);
-  }
-
-  qDebug() << "Requesting URL:" << url;
-
-  m_issuesManager->get(QNetworkRequest(QUrl(url)));
 }

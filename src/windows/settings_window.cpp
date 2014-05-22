@@ -42,7 +42,7 @@ SettingsWindow::SettingsWindow(QWidget* parent) : QDialog(parent) {
   // Set up the layout.
 
   QFormLayout* formLayout = new QFormLayout;
-  //formLayout->setSizeConstraint(QLayout::SetFixedSize);
+  // formLayout->setSizeConstraint(QLayout::SetFixedSize);
 
   formLayout->addRow(new QLabel("Server URL"), m_serverUrlEdit);
   formLayout->addRow(new QLabel("API Key"), m_apiKeyEdit);
@@ -57,6 +57,4 @@ SettingsWindow::~SettingsWindow() {
   settings.setValue("apiKey", m_apiKeyEdit->text());
 }
 
-void SettingsWindow::onUpdateButtonClicked() { 
-  close();
-}
+void SettingsWindow::onUpdateButtonClicked() { close(); }

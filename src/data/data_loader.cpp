@@ -21,7 +21,13 @@
 
 #include "data/data_loader.h"
 
+#include <QNetworkRequest>
+#include <QNetworkReply>
+#include <QSettings>
+
 #include "data/issue.h"
+
+const int kIssuesPerPage = 50;
 
 void parseIssues(const QDomElement& root, QVector<Issue>* issues) {
   Q_ASSERT(issues);
@@ -75,4 +81,83 @@ void parseIssues(const QDomElement& root, QVector<Issue>* issues) {
 
     issues->append(issue);
   }
+}
+
+DataLoader::DataLoader(QObject* parent) : QObject(parent), m_lastPageLoaded(0) {
+  m_issuesManager = new QNetworkAccessManager(this);
+  connect(m_issuesManager, SIGNAL(finished(QNetworkReply*)), this,
+          SLOT(onIssuesManagerReply(QNetworkReply*)));
+}
+
+DataLoader::~DataLoader() {}
+
+void DataLoader::loadData() {
+  qDebug() << "DataLoader::loadData()";
+
+  m_issues.clear();
+
+  startLoadDataForPage(1);
+}
+
+void DataLoader::swapIssues(QVector<Issue>* issues) { issues->swap(m_issues); }
+
+void DataLoader::onIssuesManagerReply(QNetworkReply* reply) {
+  qDebug() << "DataLoader::onIssuesManagerReply";
+
+  QByteArray data(reply->read(reply->bytesAvailable()));
+
+  // Create the XML document.
+  QDomDocument document;
+  document.setContent(data);
+
+  // Get the root element.
+  QDomElement root(document.firstChildElement("issues"));
+
+  // Parse the XML into a temp vector.
+  size_t issuesBefore = m_issues.size();
+  parseIssues(root, &m_issues);
+
+  bool doNextPage = (m_issues.size() - issuesBefore) == kIssuesPerPage;
+
+  if (doNextPage) {
+    startLoadDataForPage(m_lastPageLoaded + 1);
+  } else {
+    m_lastPageLoaded = 0;
+
+    emit issuesLoaded();
+  }
+}
+
+void DataLoader::startLoadDataForPage(int pageNum) {
+  m_lastPageLoaded = pageNum;
+
+  QString url(buildIssuesUrl(pageNum));
+  QNetworkRequest request(url);
+
+  qDebug() << "Requesting:" << url;
+
+  m_issuesManager->get(request);
+}
+
+// static
+QString DataLoader::buildIssuesUrl(int pageNum, int assignedToId) {
+  QSettings settings;
+
+  QString url(
+      "http://%1/issues.xml?"
+      "key=%2&limit=%3&page=%4&sort=priority:desc,id:desc");
+  url = url.arg(settings.value("serverUrl").toString())
+            .arg(settings.value("apiKey").toString())
+            .arg(kIssuesPerPage)
+            .arg(pageNum);
+
+#if 0
+  if (assignedToId == 1) {
+    url.append("&assigned_to_id=me");
+  } else if (assignedToId > 0) {
+    url.append("&assigned_to_id=").append(assignedToId);
+  }
+#endif  // 0
+
+  return url;
 }

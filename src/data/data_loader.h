@@ -23,10 +23,41 @@
 #define DATA_DATA_LOADER_H_
 
 #include <QDomElement>
+#include <QNetworkAccessManager>
 #include <QVector>
+
+class QNetworkReply;
 
 struct Issue;
 
 void parseIssues(const QDomElement& root, QVector<Issue>* issues);
+
+class DataLoader : public QObject {
+  Q_OBJECT
+
+public:
+  DataLoader(QObject* parent = 0);
+  virtual ~DataLoader();
+
+  // Start the process of loading the data from the server.
+  void loadData();
+
+  // Swap the issues into the specified list.
+  void swapIssues(QVector<Issue>* issues);
+
+signals:
+  void issuesLoaded();
+
+private slots:
+  void onIssuesManagerReply(QNetworkReply* reply);
+
+private:
+  void startLoadDataForPage(int pageNum);
+  static QString buildIssuesUrl(int pageNum = 1, int assignedToId = 1);
+
+  QNetworkAccessManager* m_issuesManager;
+  QVector<Issue> m_issues;
+  int m_lastPageLoaded;
+};
 
 #endif  // DATA_DATA_LOADER_H_
