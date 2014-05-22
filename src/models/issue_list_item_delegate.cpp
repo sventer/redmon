@@ -27,7 +27,6 @@
 
 #include "models/issues_model.h"
 
-const int kItemMarginSize = 2;
 const int kItemBorderSize = 5;
 
 const int kTextSpacing = 1;
@@ -50,8 +49,7 @@ void IssueListItemDelegate::paint(QPainter* painter,
   QBrush backgroundBrush(QColor(240, 240, 240));
 
   // Calculate the drawRect with only the margin applied.
-  QRect drawRect = option.rect.adjusted(kItemMarginSize, kItemMarginSize,
-                                        -kItemMarginSize, -kItemMarginSize);
+  QRect drawRect = option.rect;
 
   // Draw the backgrond rect.
   painter->setPen(QPen(Qt::NoPen));
@@ -65,26 +63,28 @@ void IssueListItemDelegate::paint(QPainter* painter,
   drawRect.adjust(kItemBorderSize, kItemBorderSize, -kItemBorderSize,
                   -kItemBorderSize);
 
-  // Draw the subject text.
+  // Draw the time text.
+  QRect timeTextText;
   painter->setPen(darkGrayPen);
   painter->setFont(getSubjectFont(option.font));
-  painter->drawText(drawRect, Qt::TextWordWrap, issue.subject, &textRect);
+  painter->drawText(drawRect, Qt::AlignRight,
+                    QString::number(issue.hoursSpent, 'f', 2), &timeTextText);
+
+  // Draw the subject text and wrap just before the time text.
+  painter->setPen(darkGrayPen);
+  painter->setFont(getSubjectFont(option.font));
+  painter->drawText(
+      drawRect.adjusted(0, 0, -timeTextText.width() + kTextSpacing, 0),
+      Qt::TextWordWrap, issue.subject, &textRect);
 
   // Adjust the drawRect for painting the project name.
   drawRect.setTop(drawRect.top() + kTextSpacing + textRect.height());
 
   // Draw the info line.
-  QStringList items;
-  if (!issue.projectName.isEmpty())
-    items.append(issue.projectName);
-  if (!issue.priorityName.isEmpty())
-    items.append(issue.priorityName);
-
-  QString infoLine(items.join(", "));
-
   painter->setPen(darkGrayPen);
   painter->setFont(getProjectNameFont(option.font));
-  painter->drawText(drawRect, Qt::TextWordWrap, infoLine, &textRect);
+  painter->drawText(drawRect, Qt::TextWordWrap, getInfoLineText(issue),
+                    &textRect);
 
   painter->restore();
 }
@@ -95,7 +95,7 @@ QSize IssueListItemDelegate::sizeHint(const QStyleOptionViewItem& option,
 
   const QListView* listView = static_cast<const QListView*>(option.widget);
 
-  int itemHeight = (kItemMarginSize + kItemBorderSize) * 2;
+  int itemHeight = kItemBorderSize * 2;
   int clientWidth = listView->viewport()->width();
 
   {
@@ -108,8 +108,8 @@ QSize IssueListItemDelegate::sizeHint(const QStyleOptionViewItem& option,
   itemHeight += kTextSpacing;
 
   QFontMetrics metrics(getProjectNameFont(option.font));
-  QRect textRect = metrics.boundingRect(QRect(0, 0, clientWidth, 0),
-                                        Qt::TextWordWrap, issue.projectName);
+  QRect textRect = metrics.boundingRect(
+      QRect(0, 0, clientWidth, 0), Qt::TextWordWrap, getInfoLineText(issue));
   itemHeight += textRect.height();
 
   return QSize(clientWidth, itemHeight);
@@ -134,4 +134,15 @@ QFont IssueListItemDelegate::getProjectNameFont(const QFont& font) {
   QFont result(font);
   result.setPixelSize(12);
   return result;
+}
+
+// static
+QString IssueListItemDelegate::getInfoLineText(const Issue& issue) {
+  QStringList items;
+  if (!issue.projectName.isEmpty())
+    items.append(issue.projectName);
+  if (!issue.priorityName.isEmpty())
+    items.append(issue.priorityName);
+
+  return items.join(", ");
 }

@@ -25,12 +25,13 @@
 #include <QDomElement>
 #include <QNetworkAccessManager>
 #include <QVector>
+#include <QMap>
 
 class QNetworkReply;
 
 struct Issue;
-
-void parseIssues(const QDomElement& root, QVector<Issue>* issues);
+struct TimeEntry;
+class TimeEntryLoader;
 
 class DataLoader : public QObject {
   Q_OBJECT
@@ -46,19 +47,23 @@ public:
   void swapIssues(QVector<Issue>* issues);
 
 signals:
-  void issuesLoaded();
+  void finished();
 
 private slots:
   void onIssuesManagerReply(QNetworkReply* reply);
 
+  void onTimeEntryLoaderFinished(TimeEntryLoader* loader);
+
 private:
-  void startLoadDataForPage(int pageNum);
-  static QString buildIssuesUrl(int pageNum = 1, int assignedToId = 1);
-  static void parseIssues(const QDomElement& root, QVector<Issue>* issues);
+  void startLoadIssues(int offset = 0);
+  static QString buildIssuesUrl(int offset = 0, int assignedToId = 1);
 
   QNetworkAccessManager* m_issuesManager;
+
   QVector<Issue> m_issues;
-  int m_lastPageLoaded;
+
+  typedef QMap<int, TimeEntryLoader*> TimeEntryLoadersType;
+  TimeEntryLoadersType m_timeEntryLoaders;
 };
 
 #endif  // DATA_DATA_LOADER_H_

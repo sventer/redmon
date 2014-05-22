@@ -19,30 +19,29 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef WINDOWS_ISSUE_LIST_ITEM_DELEGATE_H_
-#define WINDOWS_ISSUE_LIST_ITEM_DELEGATE_H_
+#include "data/utils.h"
 
-#include <QStyledItemDelegate>
-#include "data/issue.h"
+#include <QDomElement>
+#include <QDebug>
 
-class IssueListItemDelegate : public QStyledItemDelegate {
-  Q_OBJECT
+void loadCountersFromElement(QDomElement* elem, int* totalCountOut,
+                             int* offsetOut, int* limitOut) {
+  Q_ASSERT(elem);
+  Q_ASSERT(totalCountOut);
+  Q_ASSERT(offsetOut);
+  Q_ASSERT(limitOut);
 
-public:
-  IssueListItemDelegate(QObject* parent = 0);
-  virtual ~IssueListItemDelegate();
+  QDomAttr attr;
 
-  // Override: QItemDelegate
-  void paint(QPainter* painter, const QStyleOptionViewItem& option,
-             const QModelIndex& index) const override;
-  virtual QSize sizeHint(const QStyleOptionViewItem& option,
-                         const QModelIndex& index) const override;
+  attr = elem->attributeNode("total_count");
+  if (!attr.isNull())
+    *totalCountOut = attr.value().toInt();
 
-private:
-  const Issue& issueFromIndex(const QModelIndex& index) const;
-  static QFont getSubjectFont(const QFont& font);
-  static QFont getProjectNameFont(const QFont& font);
-  static QString getInfoLineText(const Issue& issue);
-};
+  attr = elem->attributeNode("offset");
+  if (!attr.isNull())
+    *offsetOut = attr.value().toInt();
 
-#endif  // WINDOWS_ISSUE_LIST_ITEM_DELEGATE_H_
+  attr = elem->attributeNode("limit");
+  if (!attr.isNull())
+    *limitOut = attr.value().toInt();
+}

@@ -24,17 +24,30 @@
 
 #include <QString>
 #include <QDate>
+#include <QDomElement>
 
 struct TimeEntry {
-  TimeEntry() : id(0), hours(0.0f) {}
+  TimeEntry()
+    : id(0), projectId(0), issueId(0), userId(0), activityId(0), hours(0.0f) {}
   ~TimeEntry() {}
 
   int id;
+  int projectId;
+  QString projectName;
+  int issueId;
+  QString issueName;
+  int userId;
+  QString userName;
+  int activityId;
+  QString activityName;
   float hours;
   QString comments;
   QDate spentOn;
   QDateTime createdOn;
   QDateTime updatedOn;
 };
+
+void updateTimeEntryFromXml(const QDomElement& timeEntryElement,
+                            TimeEntry* timeEntryOut);
 
 #endif  // DATA_TIME_ENTRY_H_

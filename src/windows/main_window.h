@@ -45,7 +45,7 @@ public:
 private slots:
   void onSettingsButtonClicked();
   void onUpdateButtonClicked();
-  void onIssuesLoaded();
+  void onDataLoaderFinished();
 
 protected:
   void moveEvent(QMoveEvent* event);

@@ -26,12 +26,11 @@
 #include <QSettings>
 
 #include "data/issue.h"
+#include "data/time_entry.h"
+#include "data/time_entry_loader.h"
+#include "data/utils.h"
 
-// The number of items to load per page.  Keep this small enough to make the
-// loading process responsive, but big enough to not overload the network.
-const int kIssuesPerPage = 25;
-
-DataLoader::DataLoader(QObject* parent) : QObject(parent), m_lastPageLoaded(0) {
+DataLoader::DataLoader(QObject* parent) : QObject(parent) {
   m_issuesManager = new QNetworkAccessManager(this);
   connect(m_issuesManager, SIGNAL(finished(QNetworkReply*)), this,
           SLOT(onIssuesManagerReply(QNetworkReply*)));
@@ -46,7 +45,7 @@ void DataLoader::loadData() {
   m_issues.clear();
 
   // Start the load process.
-  startLoadDataForPage(1);
+  startLoadIssues();
 }
 
 void DataLoader::swapIssues(QVector<Issue>* issues) { issues->swap(m_issues); }
@@ -60,28 +59,70 @@ void DataLoader::onIssuesManagerReply(QNetworkReply* reply) {
   QDomDocument document;
   document.setContent(data);
 
-  // Get the root element.
-  QDomElement root(document.firstChildElement("issues"));
+  // Check the root element.
+  QDomElement root(document.firstChildElement());
 
-  // Parse the XML into a temp vector.
-  size_t issuesBefore = m_issues.size();
-  parseIssues(root, &m_issues);
+  int totalCount = -1;
+  int offset = -1;
+  int limit = -1;
+  loadCountersFromElement(&root, &totalCount, &offset, &limit);
 
-  bool doNextPage = (m_issues.size() - issuesBefore) == kIssuesPerPage;
+  if (root.tagName() == "issues") {
+    // We put a check in here to see if nothing was added to the issues list,
+    // just so we never go into a neverending loop.
+    size_t issuesBefore = m_issues.size();
 
-  if (doNextPage) {
-    startLoadDataForPage(m_lastPageLoaded + 1);
-  } else {
-    m_lastPageLoaded = 0;
+    // Add the new issues to the current list of issues.
+    for (QDomElement issueElem = root.firstChildElement("issue");
+         !issueElem.isNull();
+         issueElem = issueElem.nextSiblingElement("issue")) {
+      // Create and update the issue.
+      Issue issue;
+      updateIssueFromXml(issueElem, &issue);
 
-    emit issuesLoaded();
+      // Create a loader for the time entries.
+      TimeEntryLoader* loader = new TimeEntryLoader(issue, this);
+      loader->connect(loader, SIGNAL(finished(TimeEntryLoader*)), this,
+                      SLOT(onTimeEntryLoaderFinished(TimeEntryLoader*)));
+      Q_ASSERT(!m_timeEntryLoaders.contains(issue.id));
+      m_timeEntryLoaders[issue.id] = loader;
+      loader->load();
+    }
+
+    // If there were issues added and we haven't reached the limit yet, request
+    // another batch of issues.
+    if (m_issues.size() != issuesBefore && totalCount >= 0 &&
+        m_issues.size() < totalCount) {
+      startLoadIssues(offset + limit);
+    }
   }
 }
 
-void DataLoader::startLoadDataForPage(int pageNum) {
-  m_lastPageLoaded = pageNum;
+void DataLoader::onTimeEntryLoaderFinished(TimeEntryLoader* loader) {
+  Q_ASSERT(loader);
 
-  QString url(buildIssuesUrl(pageNum));
+  // Find the loader in the list.
+  TimeEntryLoadersType::iterator it =
+      m_timeEntryLoaders.find(loader->issue().id);
+  Q_ASSERT(it != m_timeEntryLoaders.end());
+
+  // Add the issue to the issues list.
+  m_issues.append(loader->issue());
+
+  // Remove the loader from the list.
+  m_timeEntryLoaders.erase(it);
+
+  // delete loader;
+
+  // If the m_timeEntryLoader list is empty, it means all the issues were
+  // updated, so we can finish the process.
+  if (m_timeEntryLoaders.empty()) {
+    emit finished();
+  }
+}
+
+void DataLoader::startLoadIssues(int offset) {
+  QString url(buildIssuesUrl(offset));
   QNetworkRequest request(url);
 
   qDebug() << "Requesting:" << url;
@@ -90,16 +131,15 @@ void DataLoader::startLoadDataForPage(int pageNum) {
 }
 
 // static
-QString DataLoader::buildIssuesUrl(int pageNum, int assignedToId) {
+QString DataLoader::buildIssuesUrl(int offset, int assignedToId) {
   QSettings settings;
 
   QString url(
       "http://%1/issues.xml?"
-      "key=%2&limit=%3&page=%4&sort=priority:desc,id:desc");
+      "key=%2&limit=100&offset=%3&sort=priority:desc,id:desc");
   url = url.arg(settings.value("serverUrl").toString())
             .arg(settings.value("apiKey").toString())
-            .arg(kIssuesPerPage)
-            .arg(pageNum);
+            .arg(offset);
 
   if (assignedToId == 1) {
     url.append("&assigned_to_id=me");
@@ -108,58 +148,4 @@ QString DataLoader::buildIssuesUrl(int pageNum, int assignedToId) {
   }
 
   return url;
-}
-
-void DataLoader::parseIssues(const QDomElement& root, QVector<Issue>* issues) {
-  Q_ASSERT(issues);
-
-  for (QDomElement issueElem = root.firstChildElement("issue");
-       !issueElem.isNull(); issueElem = issueElem.nextSiblingElement("issue")) {
-    Issue issue;
-
-    for (QDomElement elem(issueElem.firstChildElement()); !elem.isNull();
-         elem = elem.nextSiblingElement()) {
-      if (elem.tagName() == "id") {
-        issue.id = elem.text().toInt();
-        continue;
-      }
-
-      if (elem.tagName() == "subject") {
-        issue.subject = elem.text();
-        continue;
-      }
-
-      if (elem.tagName() == "project") {
-        QDomAttr idAttr = elem.attributeNode("id");
-        if (!idAttr.isNull())
-          issue.projectId = idAttr.value().toInt();
-
-        QDomAttr nameAttr = elem.attributeNode("name");
-        if (!nameAttr.isNull())
-          issue.projectName = nameAttr.value();
-      }
-
-      if (elem.tagName() == "priority") {
-        QDomAttr idAttr = elem.attributeNode("id");
-        if (!idAttr.isNull())
-          issue.priorityId = idAttr.value().toInt();
-
-        QDomAttr nameAttr = elem.attributeNode("name");
-        if (!nameAttr.isNull())
-          issue.priorityName = nameAttr.value();
-      }
-
-      if (elem.tagName() == "assigned_to") {
-        QDomAttr idAttr = elem.attributeNode("id");
-        if (!idAttr.isNull())
-          issue.assignedToId = idAttr.value().toInt();
-
-        QDomAttr nameAttr = elem.attributeNode("name");
-        if (!nameAttr.isNull())
-          issue.assignedToName = nameAttr.value();
-      }
-    }
-
-    issues->append(issue);
-  }
 }

@@ -39,8 +39,6 @@
 #include "models/issue_list_item_delegate.h"
 #include "windows/settings_window.h"
 
-const size_t kIssuesPerPage = 50;
-
 MainWindow::MainWindow(QWidget* parent) : QWidget(parent), m_dataLoader(NULL) {
   // Position the window to the last place we stored it at.
   QSettings settings;
@@ -51,7 +49,7 @@ MainWindow::MainWindow(QWidget* parent) : QWidget(parent), m_dataLoader(NULL) {
 
   // Create and link up the worker object that will load our issues for us.
   m_dataLoader = new DataLoader(this);
-  connect(m_dataLoader, SIGNAL(issuesLoaded()), this, SLOT(onIssuesLoaded()));
+  connect(m_dataLoader, SIGNAL(finished()), this, SLOT(onDataLoaderFinished()));
 
   Issue issue;
 
@@ -120,7 +118,7 @@ void MainWindow::onUpdateButtonClicked() {
   m_dataLoader->loadData();
 }
 
-void MainWindow::onIssuesLoaded() {
+void MainWindow::onDataLoaderFinished() {
   qDebug() << "MainWindow::onIssuesLoaded()";
 
   // Swap the data from the worker into the real issues data.

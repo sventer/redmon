@@ -22,10 +22,17 @@
 #ifndef ISSUE_H
 #define ISSUE_H
 
+#include <QDomElement>
 #include <QString>
+#include <QVector>
+
+#include "data/time_entry.h"
 
 struct Issue {
-  Issue() : id(0) {}
+  typedef QVector<TimeEntry> TimeEntriesType;
+
+  Issue()
+    : id(0), projectId(0), priorityId(0), assignedToId(0), hoursSpent(0.0f) {}
   ~Issue() {}
 
   int id;
@@ -39,6 +46,14 @@ struct Issue {
 
   int assignedToId;
   QString assignedToName;
+
+  // Time entries.
+  float hoursSpent;
+  TimeEntriesType timeEntries;
+
+  void calculateHoursSpent();
 };
+
+void updateIssueFromXml(const QDomElement& issueElement, Issue* issueOut);
 
 #endif  // ISSUE_H

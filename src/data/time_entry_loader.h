@@ -19,30 +19,42 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef WINDOWS_ISSUE_LIST_ITEM_DELEGATE_H_
-#define WINDOWS_ISSUE_LIST_ITEM_DELEGATE_H_
+#ifndef DATA_TIME_ENTRY_LOADER_H_
+#define DATA_TIME_ENTRY_LOADER_H_
 
-#include <QStyledItemDelegate>
+#include <QObject>
+
 #include "data/issue.h"
 
-class IssueListItemDelegate : public QStyledItemDelegate {
+class QNetworkAccessManager;
+class QNetworkReply;
+
+class TimeEntryLoader : public QObject {
   Q_OBJECT
 
 public:
-  IssueListItemDelegate(QObject* parent = 0);
-  virtual ~IssueListItemDelegate();
+  TimeEntryLoader(const Issue& issue, QObject* parent = 0);
+  virtual ~TimeEntryLoader();
 
-  // Override: QItemDelegate
-  void paint(QPainter* painter, const QStyleOptionViewItem& option,
-             const QModelIndex& index) const override;
-  virtual QSize sizeHint(const QStyleOptionViewItem& option,
-                         const QModelIndex& index) const override;
+  // Start loading the time entries for our owned issue.
+  void load();
+
+  // Get the issue.
+  const Issue& issue() const { return m_issue; }
+
+signals:
+  void finished(TimeEntryLoader* loader);
+
+private slots:
+  void onNetworkReply(QNetworkReply* reply);
 
 private:
-  const Issue& issueFromIndex(const QModelIndex& index) const;
-  static QFont getSubjectFont(const QFont& font);
-  static QFont getProjectNameFont(const QFont& font);
-  static QString getInfoLineText(const Issue& issue);
+  QString buildTimeEntriesUrl(int offset);
+  void startLoadingTimeEntries(int offset = 0);
+
+  Issue m_issue;
+
+  QNetworkAccessManager* m_network;
 };
 
-#endif  // WINDOWS_ISSUE_LIST_ITEM_DELEGATE_H_
+#endif  // DATA_TIME_ENTRY_LOADER_H_
