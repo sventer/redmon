@@ -24,8 +24,10 @@
 
 #include <QDialog>
 
-class QLineEdit;
 class QCheckBox;
+class QLabel;
+class QLineEdit;
+class QSlider;
 
 class SettingsWindow : public QDialog {
   Q_OBJECT
@@ -36,13 +38,19 @@ public:
 
 private slots:
   void onUpdateButtonClicked();
+  void onUpdateIntervalSliderChanged();
 
 private:
+  void setUpdateIntervalLabel();
+
   QLineEdit* m_serverUrlEdit;
   QLineEdit* m_apiKeyEdit;
 
   QCheckBox* m_onlyMyIssuesCheckBox;
   QCheckBox* m_onlyMyTimeEntriesCheckBox;
+
+  QSlider* m_updateIntervalSlider;
+  QLabel* m_updateIntervalLabel;
 };
 
 #endif  // WINDOWS_SETTINGS_WINDOW_H_

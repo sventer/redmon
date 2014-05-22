@@ -31,6 +31,7 @@
 #include <QPushButton>
 #include <QResizeEvent>
 #include <QSettings>
+#include <QTimer>
 #include <QUrl>
 
 #include "data/data.h"
@@ -99,20 +100,46 @@ MainWindow::MainWindow(QWidget* parent) : QWidget(parent), m_dataLoader(NULL) {
   mainLayout->addWidget(m_issuesList);
 
   setLayout(mainLayout);
+
+  m_issueListTimer = new QTimer(this);
+  connect(m_issueListTimer, SIGNAL(timeout()), this,
+          SLOT(onIssueListTimerTimeout()));
+  startTimer();
 }
 
 MainWindow::~MainWindow() {}
 
+void MainWindow::moveEvent(QMoveEvent* event) {
+  QWidget::moveEvent(event);
+
+  QSettings settings;
+  settings.setValue("mainWindowPos", event->pos());
+}
+
+void MainWindow::resizeEvent(QResizeEvent* event) {
+  QWidget::resizeEvent(event);
+
+  QSettings settings;
+  settings.setValue("mainWindowSize", event->size());
+}
+
 void MainWindow::onSettingsButtonClicked() {
+  // Stop the timer while we're in the settings window.
+  stopTimer();
+
   SettingsWindow settingsWindow(this);
   settingsWindow.setModal(true);
   settingsWindow.exec();
 
-  // Do a refresh.
+  // Do a refresh.  We don't have to start the timer ourselves here, because
+  // after the update the timer will start up again with the new interval value.
   onUpdateButtonClicked();
 }
 
 void MainWindow::onUpdateButtonClicked() {
+  // If the update timer is running, stop it until the update is done.
+  stopTimer();
+
   // Set the update button to a disabled state.
   m_updateButton->setText("Updating...");
   m_updateButton->setEnabled(false);
@@ -133,18 +160,30 @@ void MainWindow::onDataLoaderFinished() {
   // Set the update button back to an enabled state.
   m_updateButton->setText("Update");
   m_updateButton->setEnabled(true);
+
+  // Start the update timer again.
+  startTimer();
 }
 
-void MainWindow::moveEvent(QMoveEvent* event) {
-  QWidget::moveEvent(event);
-
-  QSettings settings;
-  settings.setValue("mainWindowPos", event->pos());
+void MainWindow::onIssueListTimerTimeout() {
+  onUpdateButtonClicked();
 }
 
-void MainWindow::resizeEvent(QResizeEvent* event) {
-  QWidget::resizeEvent(event);
-
+void MainWindow::startTimer() {
   QSettings settings;
-  settings.setValue("mainWindowSize", event->size());
+
+  int interval = settings.value("issueListUpdateInterval").toInt();
+
+  if (interval >= 1) {
+    qDebug() << "Starting timer:" << interval;
+    // interval in minutes.
+    m_issueListTimer->start(interval * 1000 * 60);
+  }
+}
+
+void MainWindow::stopTimer() {
+  if (m_issueListTimer->isActive()) {
+    qDebug() << "Stopping timer";
+    m_issueListTimer->stop();
+  }
 }

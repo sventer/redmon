@@ -32,6 +32,7 @@ class QNetworkAccessManager;
 class QNetworkReply;
 class QPushButton;
 class QResizeEvent;
+class QTimer;
 
 class DataLoader;
 
@@ -42,16 +43,20 @@ public:
   explicit MainWindow(QWidget* parent = 0);
   virtual ~MainWindow();
 
-private slots:
-  void onSettingsButtonClicked();
-  void onUpdateButtonClicked();
-  void onDataLoaderFinished();
-
 protected:
   void moveEvent(QMoveEvent* event);
   void resizeEvent(QResizeEvent* event);
 
+private slots:
+  void onSettingsButtonClicked();
+  void onUpdateButtonClicked();
+  void onDataLoaderFinished();
+  void onIssueListTimerTimeout();
+
 private:
+  void startTimer();
+  void stopTimer();
+
   // Controls.
   QPushButton* m_settingsButton;
   QPushButton* m_updateButton;
@@ -59,6 +64,9 @@ private:
 
   // The worker object we use to load our issues from the server.
   DataLoader* m_dataLoader;
+
+  // The timer we use to update the issue list.
+  QTimer* m_issueListTimer;
 
   Q_DISABLE_COPY(MainWindow)
 };

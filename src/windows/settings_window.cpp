@@ -28,6 +28,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QSettings>
+#include <QSlider>
 
 SettingsWindow::SettingsWindow(QWidget* parent) : QDialog(parent) {
   QSettings settings;
@@ -45,18 +46,32 @@ SettingsWindow::SettingsWindow(QWidget* parent) : QDialog(parent) {
   m_onlyMyTimeEntriesCheckBox->setChecked(
       settings.value("onlyMyTimeEntries").toBool());
 
+  m_updateIntervalSlider = new QSlider(Qt::Horizontal);
+  m_updateIntervalSlider->setMinimum(0);
+  m_updateIntervalSlider->setMaximum(120);
+  m_updateIntervalSlider->setSingleStep(1);
+  m_updateIntervalSlider->setValue(
+      settings.value("issueListUpdateInterval").toInt());
+  connect(m_updateIntervalSlider, SIGNAL(valueChanged(int)), this,
+          SLOT(onUpdateIntervalSliderChanged()));
+
+  m_updateIntervalLabel = new QLabel;
+  setUpdateIntervalLabel();
+
   QPushButton* updateButton = new QPushButton("Update");
   connect(updateButton, SIGNAL(clicked()), this, SLOT(onUpdateButtonClicked()));
 
   // Set up the layout.
 
   QFormLayout* formLayout = new QFormLayout;
-  // formLayout->setSizeConstraint(QLayout::SetFixedSize);
 
   formLayout->addRow(new QLabel("Server URL"), m_serverUrlEdit);
   formLayout->addRow(new QLabel("API Key"), m_apiKeyEdit);
   formLayout->addRow(NULL, m_onlyMyIssuesCheckBox);
   formLayout->addRow(NULL, m_onlyMyTimeEntriesCheckBox);
+  formLayout->addRow(new QLabel("Issue List Update Interval"),
+                     m_updateIntervalSlider);
+  formLayout->addRow(NULL, m_updateIntervalLabel);
   formLayout->addRow(NULL, updateButton);
 
   setLayout(formLayout);
@@ -69,7 +84,24 @@ SettingsWindow::~SettingsWindow() {
   settings.setValue("onlyMyIssues", m_onlyMyIssuesCheckBox->isChecked());
   settings.setValue("onlyMyTimeEntries",
                     m_onlyMyTimeEntriesCheckBox->isChecked());
+  settings.setValue("issueListUpdateInterval", m_updateIntervalSlider->value());
+
   settings.sync();
 }
 
 void SettingsWindow::onUpdateButtonClicked() { close(); }
+
+void SettingsWindow::onUpdateIntervalSliderChanged() {
+  setUpdateIntervalLabel();
+}
+
+void SettingsWindow::setUpdateIntervalLabel() {
+  int value = m_updateIntervalSlider->value();
+
+  if (value == 1)
+    m_updateIntervalLabel->setText("1 minute");
+  else if (value > 1)
+    m_updateIntervalLabel->setText(QString("%1 minutes").arg(value));
+  else
+    m_updateIntervalLabel->setText("Manual update");
+}
