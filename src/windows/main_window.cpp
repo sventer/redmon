@@ -107,6 +107,9 @@ void MainWindow::onSettingsButtonClicked() {
   SettingsWindow settingsWindow(this);
   settingsWindow.setModal(true);
   settingsWindow.exec();
+
+  // Do a refresh.
+  onUpdateButtonClicked();
 }
 
 void MainWindow::onUpdateButtonClicked() {

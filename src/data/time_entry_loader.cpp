@@ -85,6 +85,11 @@ QString TimeEntryLoader::buildTimeEntriesUrl(int offset) {
             .arg(offset)
             .arg(m_issue.id);
 
+  if (settings.value("onlyMyTimeEntries", false).toBool()) {
+    // Only add time entries that i made.
+    url.append("&user_id=me");
+  }
+
   return url;
 }
 

@@ -51,12 +51,11 @@ signals:
 
 private slots:
   void onIssuesManagerReply(QNetworkReply* reply);
-
   void onTimeEntryLoaderFinished(TimeEntryLoader* loader);
 
 private:
   void startLoadIssues(int offset = 0);
-  static QString buildIssuesUrl(int offset = 0, int assignedToId = 1);
+  static QString buildIssuesUrl(int offset = 0);
 
   QNetworkAccessManager* m_issuesManager;
 

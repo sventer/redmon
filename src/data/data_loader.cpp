@@ -122,16 +122,13 @@ void DataLoader::onTimeEntryLoaderFinished(TimeEntryLoader* loader) {
 }
 
 void DataLoader::startLoadIssues(int offset) {
-  QString url(buildIssuesUrl(offset));
-  QNetworkRequest request(url);
-
-  qDebug() << "Requesting:" << url;
-
+  QNetworkRequest request(buildIssuesUrl(offset));
+  qDebug() << "Requesting:" << request.url();
   m_issuesManager->get(request);
 }
 
 // static
-QString DataLoader::buildIssuesUrl(int offset, int assignedToId) {
+QString DataLoader::buildIssuesUrl(int offset) {
   QSettings settings;
 
   QString url(
@@ -141,10 +138,9 @@ QString DataLoader::buildIssuesUrl(int offset, int assignedToId) {
             .arg(settings.value("apiKey").toString())
             .arg(offset);
 
-  if (assignedToId == 1) {
+  if (settings.value("onlyMyIssues", true).toBool()) {
+    // Only show our own issues.
     url.append("&assigned_to_id=me");
-  } else if (assignedToId > 0) {
-    url.append("&assigned_to_id=").append(assignedToId);
   }
 
   return url;

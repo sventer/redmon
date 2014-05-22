@@ -25,6 +25,7 @@
 #include <QDialog>
 
 class QLineEdit;
+class QCheckBox;
 
 class SettingsWindow : public QDialog {
   Q_OBJECT
@@ -39,6 +40,9 @@ private slots:
 private:
   QLineEdit* m_serverUrlEdit;
   QLineEdit* m_apiKeyEdit;
+
+  QCheckBox* m_onlyMyIssuesCheckBox;
+  QCheckBox* m_onlyMyTimeEntriesCheckBox;
 };
 
 #endif  // WINDOWS_SETTINGS_WINDOW_H_

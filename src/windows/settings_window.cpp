@@ -21,6 +21,7 @@
 
 #include "windows/settings_window.h"
 
+#include <QCheckBox>
 #include <QDebug>
 #include <QFormLayout>
 #include <QPushButton>
@@ -34,7 +35,15 @@ SettingsWindow::SettingsWindow(QWidget* parent) : QDialog(parent) {
   // Create controls.
 
   m_serverUrlEdit = new QLineEdit(settings.value("serverUrl").toString());
+
   m_apiKeyEdit = new QLineEdit(settings.value("apiKey").toString());
+
+  m_onlyMyIssuesCheckBox = new QCheckBox("Only show my issues");
+  m_onlyMyIssuesCheckBox->setChecked(settings.value("onlyMyIssues").toBool());
+
+  m_onlyMyTimeEntriesCheckBox = new QCheckBox("Only show my time entries");
+  m_onlyMyTimeEntriesCheckBox->setChecked(
+      settings.value("onlyMyTimeEntries").toBool());
 
   QPushButton* updateButton = new QPushButton("Update");
   connect(updateButton, SIGNAL(clicked()), this, SLOT(onUpdateButtonClicked()));
@@ -46,6 +55,8 @@ SettingsWindow::SettingsWindow(QWidget* parent) : QDialog(parent) {
 
   formLayout->addRow(new QLabel("Server URL"), m_serverUrlEdit);
   formLayout->addRow(new QLabel("API Key"), m_apiKeyEdit);
+  formLayout->addRow(NULL, m_onlyMyIssuesCheckBox);
+  formLayout->addRow(NULL, m_onlyMyTimeEntriesCheckBox);
   formLayout->addRow(NULL, updateButton);
 
   setLayout(formLayout);
@@ -55,6 +66,10 @@ SettingsWindow::~SettingsWindow() {
   QSettings settings;
   settings.setValue("serverUrl", m_serverUrlEdit->text());
   settings.setValue("apiKey", m_apiKeyEdit->text());
+  settings.setValue("onlyMyIssues", m_onlyMyIssuesCheckBox->isChecked());
+  settings.setValue("onlyMyTimeEntries",
+                    m_onlyMyTimeEntriesCheckBox->isChecked());
+  settings.sync();
 }
 
 void SettingsWindow::onUpdateButtonClicked() { close(); }
