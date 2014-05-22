@@ -46,7 +46,8 @@ MainWindow::MainWindow(QWidget* parent) : QWidget(parent), m_dataLoader(NULL) {
   QSettings settings;
   QPoint mainWindowPos(settings.value("mainWindowPos").toPoint());
   QSize mainWindowSize(settings.value("mainWindowSize").toSize());
-  setGeometry(QRect(mainWindowPos, mainWindowSize));
+  if (mainWindowPos != QPoint(0, 0) && mainWindowSize != QSize(0, 0))
+    setGeometry(QRect(mainWindowPos, mainWindowSize));
 
   // Create and link up the worker object that will load our issues for us.
   m_dataLoader = new DataLoader(this);
