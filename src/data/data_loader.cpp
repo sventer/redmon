@@ -27,61 +27,9 @@
 
 #include "data/issue.h"
 
-const int kIssuesPerPage = 50;
-
-void parseIssues(const QDomElement& root, QVector<Issue>* issues) {
-  Q_ASSERT(issues);
-
-  for (QDomElement issueElem = root.firstChildElement("issue");
-       !issueElem.isNull(); issueElem = issueElem.nextSiblingElement("issue")) {
-    Issue issue;
-
-    for (QDomElement elem(issueElem.firstChildElement()); !elem.isNull();
-         elem = elem.nextSiblingElement()) {
-      if (elem.tagName() == "id") {
-        issue.id = elem.text().toInt();
-        continue;
-      }
-
-      if (elem.tagName() == "subject") {
-        issue.subject = elem.text();
-        continue;
-      }
-
-      if (elem.tagName() == "project") {
-        QDomAttr idAttr = elem.attributeNode("id");
-        if (!idAttr.isNull())
-          issue.projectId = idAttr.value().toInt();
-
-        QDomAttr nameAttr = elem.attributeNode("name");
-        if (!nameAttr.isNull())
-          issue.projectName = nameAttr.value();
-      }
-
-      if (elem.tagName() == "priority") {
-        QDomAttr idAttr = elem.attributeNode("id");
-        if (!idAttr.isNull())
-          issue.priorityId = idAttr.value().toInt();
-
-        QDomAttr nameAttr = elem.attributeNode("name");
-        if (!nameAttr.isNull())
-          issue.priorityName = nameAttr.value();
-      }
-
-      if (elem.tagName() == "assigned_to") {
-        QDomAttr idAttr = elem.attributeNode("id");
-        if (!idAttr.isNull())
-          issue.assignedToId = idAttr.value().toInt();
-
-        QDomAttr nameAttr = elem.attributeNode("name");
-        if (!nameAttr.isNull())
-          issue.assignedToName = nameAttr.value();
-      }
-    }
-
-    issues->append(issue);
-  }
-}
+// The number of items to load per page.  Keep this small enough to make the
+// loading process responsive, but big enough to not overload the network.
+const int kIssuesPerPage = 25;
 
 DataLoader::DataLoader(QObject* parent) : QObject(parent), m_lastPageLoaded(0) {
   m_issuesManager = new QNetworkAccessManager(this);
@@ -94,8 +42,10 @@ DataLoader::~DataLoader() {}
 void DataLoader::loadData() {
   qDebug() << "DataLoader::loadData()";
 
+  // Clear the issues we have in the list already.
   m_issues.clear();
 
+  // Start the load process.
   startLoadDataForPage(1);
 }
 
@@ -151,13 +101,65 @@ QString DataLoader::buildIssuesUrl(int pageNum, int assignedToId) {
             .arg(kIssuesPerPage)
             .arg(pageNum);
 
-#if 0
   if (assignedToId == 1) {
     url.append("&assigned_to_id=me");
   } else if (assignedToId > 0) {
     url.append("&assigned_to_id=").append(assignedToId);
   }
-#endif  // 0
 
   return url;
+}
+
+void DataLoader::parseIssues(const QDomElement& root, QVector<Issue>* issues) {
+  Q_ASSERT(issues);
+
+  for (QDomElement issueElem = root.firstChildElement("issue");
+       !issueElem.isNull(); issueElem = issueElem.nextSiblingElement("issue")) {
+    Issue issue;
+
+    for (QDomElement elem(issueElem.firstChildElement()); !elem.isNull();
+         elem = elem.nextSiblingElement()) {
+      if (elem.tagName() == "id") {
+        issue.id = elem.text().toInt();
+        continue;
+      }
+
+      if (elem.tagName() == "subject") {
+        issue.subject = elem.text();
+        continue;
+      }
+
+      if (elem.tagName() == "project") {
+        QDomAttr idAttr = elem.attributeNode("id");
+        if (!idAttr.isNull())
+          issue.projectId = idAttr.value().toInt();
+
+        QDomAttr nameAttr = elem.attributeNode("name");
+        if (!nameAttr.isNull())
+          issue.projectName = nameAttr.value();
+      }
+
+      if (elem.tagName() == "priority") {
+        QDomAttr idAttr = elem.attributeNode("id");
+        if (!idAttr.isNull())
+          issue.priorityId = idAttr.value().toInt();
+
+        QDomAttr nameAttr = elem.attributeNode("name");
+        if (!nameAttr.isNull())
+          issue.priorityName = nameAttr.value();
+      }
+
+      if (elem.tagName() == "assigned_to") {
+        QDomAttr idAttr = elem.attributeNode("id");
+        if (!idAttr.isNull())
+          issue.assignedToId = idAttr.value().toInt();
+
+        QDomAttr nameAttr = elem.attributeNode("name");
+        if (!nameAttr.isNull())
+          issue.assignedToName = nameAttr.value();
+      }
+    }
+
+    issues->append(issue);
+  }
 }

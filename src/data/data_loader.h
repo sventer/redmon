@@ -54,6 +54,7 @@ private slots:
 private:
   void startLoadDataForPage(int pageNum);
   static QString buildIssuesUrl(int pageNum = 1, int assignedToId = 1);
+  static void parseIssues(const QDomElement& root, QVector<Issue>* issues);
 
   QNetworkAccessManager* m_issuesManager;
   QVector<Issue> m_issues;
