@@ -8,6 +8,12 @@ find_package(Qt5 COMPONENTS Core Gui Widgets Network Xml REQUIRED)
 
 file(GLOB_RECURSE redmon_SOURCE_FILES "src/*.cpp" "src/*.h")
 
+if(APPLE)
+  list(APPEND redmon_SOURCE_FILES "resources/redmon.icns")
+  set_source_files_properties("resources/redmon.icns" PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+  set("MACOSX_BUNDLE_ICON_FILE" "redmon.icns")
+endif(APPLE)
+
 include_directories("src")
 
 add_executable("RedMon" WIN32 MACOSX_BUNDLE ${redmon_SOURCE_FILES})
@@ -19,7 +25,9 @@ target_link_libraries("RedMon"
   ${Qt5Xml_LIBRARIES}
 )
 
-set_target_properties("RedMon" PROPERTIES
-  MACOSX_BUNDLE_INFO_PLIST
-  "${PROJECT_SOURCE_DIR}/cmake/MacOSXBundleInfo.plist.in"
-)
+if(APPLE)
+  set_target_properties("RedMon" PROPERTIES
+    MACOSX_BUNDLE_INFO_PLIST
+    "${PROJECT_SOURCE_DIR}/cmake/MacOSXBundleInfo.plist.in"
+  )
+endif()
