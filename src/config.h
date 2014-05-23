@@ -1,4 +1,3 @@
-#include "config.h"
 // RedMon
 // Copyright (c) 2014 Tiaan Louw
 //
@@ -20,22 +19,39 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <QApplication>
+#ifndef CONFIG_H_
+#define CONFIG_H_
 
-#include "config.h"
-#include "windows/main_window.h"
+#include <QPoint>
+#include <QSize>
 
-int main(int argc, char* argv[]) {
-  QApplication app(argc, argv);
+class Config {
+public:
+  static Config& Get();
 
-  app.setOrganizationName("RedMon");
-  // app.setOrganizationDomain("redmon.org");
-  app.setApplicationName("RedMon");
+  void load();
+  void save();
 
-  Config::Get().load();
+  const QPoint& mainWindowPos() const { return m_mainWindowPos; }
+  void setMainWindowPos(const QPoint& mainWindowPos);
 
-  MainWindow w;
-  w.show();
+  const QSize& mainWindowSize() const { return m_mainWindowSize; }
+  void setMainWindowSize(const QSize& mainWindowSize);
 
-  return app.exec();
-}
+  int issueListUpdateInterval() const { return m_issueListUpdateInterval; }
+  void setIssueListUpdateInterval(int issueListUpdateInterval);
+
+private:
+  Config();
+  ~Config();
+
+  QPoint m_mainWindowPos;
+
+  QSize m_mainWindowSize;
+
+  int m_issueListUpdateInterval;
+
+  Q_DISABLE_COPY(Config)
+};
+
+#endif  // CONFIG_H_

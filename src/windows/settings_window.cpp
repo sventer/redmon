@@ -30,6 +30,8 @@
 #include <QSettings>
 #include <QSlider>
 
+#include "config.h"
+
 SettingsWindow::SettingsWindow(QWidget* parent) : QDialog(parent) {
   QSettings settings;
 
@@ -78,13 +80,15 @@ SettingsWindow::SettingsWindow(QWidget* parent) : QDialog(parent) {
 }
 
 SettingsWindow::~SettingsWindow() {
+  Config::Get().setIssueListUpdateInterval(m_updateIntervalSlider->value());
+  Config::Get().save();
+
   QSettings settings;
   settings.setValue("serverUrl", m_serverUrlEdit->text());
   settings.setValue("apiKey", m_apiKeyEdit->text());
   settings.setValue("onlyMyIssues", m_onlyMyIssuesCheckBox->isChecked());
   settings.setValue("onlyMyTimeEntries",
                     m_onlyMyTimeEntriesCheckBox->isChecked());
-  settings.setValue("issueListUpdateInterval", m_updateIntervalSlider->value());
 
   settings.sync();
 }

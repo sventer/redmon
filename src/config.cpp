@@ -1,4 +1,3 @@
-#include "config.h"
 // RedMon
 // Copyright (c) 2014 Tiaan Louw
 //
@@ -20,22 +19,46 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <QApplication>
-
 #include "config.h"
-#include "windows/main_window.h"
 
-int main(int argc, char* argv[]) {
-  QApplication app(argc, argv);
+#include <QSettings>
 
-  app.setOrganizationName("RedMon");
-  // app.setOrganizationDomain("redmon.org");
-  app.setApplicationName("RedMon");
-
-  Config::Get().load();
-
-  MainWindow w;
-  w.show();
-
-  return app.exec();
+// static
+Config& Config::Get() {
+  static Config config;
+  return config;
 }
+
+void Config::load() {
+  QSettings settings;
+
+  m_mainWindowPos = settings.value("mainWindowPos").toPoint();
+  m_mainWindowSize = settings.value("mainWindowSize").toSize();
+  m_issueListUpdateInterval = settings.value("issueListUpdateInterval").toInt();
+}
+
+void Config::save() {
+  QSettings settings;
+
+  settings.setValue("mainWindowPos", m_mainWindowPos);
+  settings.setValue("mainWindowSize", m_mainWindowSize);
+  settings.setValue("issueListUpdateInterval", m_issueListUpdateInterval);
+
+  settings.sync();
+}
+
+void Config::setMainWindowPos(const QPoint& mainWindowPos) {
+  m_mainWindowPos = mainWindowPos;
+}
+
+void Config::setMainWindowSize(const QSize& mainWindowSize) {
+  m_mainWindowSize = mainWindowSize;
+}
+
+void Config::setIssueListUpdateInterval(int issueListupdateInterval) {
+  m_issueListUpdateInterval = issueListupdateInterval;
+}
+
+Config::Config() : m_issueListUpdateInterval(0) {}
+
+Config::~Config() {}

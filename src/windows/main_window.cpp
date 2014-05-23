@@ -34,6 +34,7 @@
 #include <QTimer>
 #include <QUrl>
 
+#include "config.h"
 #include "data/data.h"
 #include "data/data_loader.h"
 #include "models/issues_model.h"
@@ -43,9 +44,8 @@
 MainWindow::MainWindow(QWidget* parent)
   : QWidget(parent), m_isTrackingTime(false) {
   // Position the window to the last place we stored it at.
-  QSettings settings;
-  QPoint mainWindowPos(settings.value("mainWindowPos").toPoint());
-  QSize mainWindowSize(settings.value("mainWindowSize").toSize());
+  QPoint mainWindowPos(Config::Get().mainWindowPos());
+  QSize mainWindowSize(Config::Get().mainWindowSize());
   if (mainWindowPos != QPoint(0, 0) && mainWindowSize != QSize(0, 0))
     setGeometry(QRect(mainWindowPos, mainWindowSize));
 
@@ -126,15 +126,13 @@ MainWindow::~MainWindow() {}
 void MainWindow::moveEvent(QMoveEvent* event) {
   QWidget::moveEvent(event);
 
-  QSettings settings;
-  settings.setValue("mainWindowPos", event->pos());
+  Config::Get().setMainWindowPos(event->pos());
 }
 
 void MainWindow::resizeEvent(QResizeEvent* event) {
   QWidget::resizeEvent(event);
 
-  QSettings settings;
-  settings.setValue("mainWindowSize", event->size());
+  Config::Get().setMainWindowSize(event->size());
 }
 
 void MainWindow::onSettingsButtonClicked() {
@@ -211,19 +209,15 @@ void MainWindow::onDataLoaderFinished() {
   startTimer();
 }
 
-void MainWindow::onIssueListTimerTimeout() {
-  onUpdateButtonClicked();
-}
+void MainWindow::onIssueListTimerTimeout() { onUpdateButtonClicked(); }
 
 void MainWindow::onIssuesListCurrentChanged(const QModelIndex& current,
-                                  const QModelIndex& previous) {
+                                            const QModelIndex& previous) {
   qDebug() << current;
 }
 
 void MainWindow::startTimer() {
-  QSettings settings;
-
-  int interval = settings.value("issueListUpdateInterval").toInt();
+  int interval = Config::Get().issueListUpdateInterval();
 
   if (interval >= 1) {
     qDebug() << "Starting timer:" << interval;
@@ -243,6 +237,4 @@ void MainWindow::startTrackingTime(int issueId) {
   qDebug() << "Tracking time for:" << issueId;
 }
 
-void MainWindow::stopTrackingTime() {
-  qDebug() << "Stop tracking time";
-}
+void MainWindow::stopTrackingTime() { qDebug() << "Stop tracking time"; }
