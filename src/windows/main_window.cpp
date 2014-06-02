@@ -31,8 +31,11 @@
 #include <QPushButton>
 #include <QResizeEvent>
 #include <QSettings>
+#include <QTableView>
 #include <QTimer>
 #include <QUrl>
+
+#include <QHeaderView>
 
 #include "config.h"
 #include "data/data.h"
@@ -40,6 +43,8 @@
 #include "models/issues_model.h"
 #include "models/issue_list_item_delegate.h"
 #include "windows/settings_window.h"
+#include "models/issues_table_model.h"
+#include "models/issue_table_item_delegate.h"
 
 MainWindow::MainWindow(QWidget* parent)
   : QWidget(parent), m_isTrackingTime(false) {
@@ -87,15 +92,22 @@ MainWindow::MainWindow(QWidget* parent)
   connect(m_stopButton, SIGNAL(clicked()), this, SLOT(onStopButtonClicked()));
   m_stopButton->hide();
 
+  IssuesModel* issues = new IssuesModel();
+
   m_issuesList = new QListView(this);
   m_issuesList->setFrameShape(QFrame::NoFrame);
   m_issuesList->setResizeMode(QListView::Adjust);
   m_issuesList->setItemDelegate(new IssueListItemDelegate);
-  m_issuesList->setModel(new IssuesModel);
+  m_issuesList->setModel(issues);
   connect(
       m_issuesList->selectionModel(),
       SIGNAL(currentChanged(const QModelIndex&, const QModelIndex&)), this,
       SLOT(onIssuesListCurrentChanged(const QModelIndex&, const QModelIndex&)));
+
+  m_issuesTable = new QTableView;
+  m_issuesTable->setFrameShape(QFrame::NoFrame);
+  //m_issuesTable->setItemDelegate(new IssueTableItemDelegate);
+  m_issuesTable->setModel(new IssuesTableModel());
 
   // Set up the layouts.
 
@@ -112,6 +124,7 @@ MainWindow::MainWindow(QWidget* parent)
   mainLayout->setSpacing(0);
   mainLayout->addLayout(buttonsLayout);
   mainLayout->addWidget(m_issuesList);
+  mainLayout->addWidget(m_issuesTable);
 
   setLayout(mainLayout);
 

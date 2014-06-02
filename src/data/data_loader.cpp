@@ -131,10 +131,17 @@ void DataLoader::startLoadIssues(int offset) {
 QString DataLoader::buildIssuesUrl(int offset) {
   QSettings settings;
 
+  // if the user specified the protocol as part of the url remove the protocol
+  QString userUrl = settings.value("serverUrl").toString();
+  if (settings.value("serverUrl").toString().startsWith("http://"))
+	  userUrl = settings.value("serverUrl").toString().split("//")[1];
+  else
+	  userUrl = settings.value("serverUrl").toString();
+
   QString url(
       "http://%1/issues.xml?"
       "key=%2&limit=100&offset=%3&sort=priority:desc,id:desc");
-  url = url.arg(settings.value("serverUrl").toString())
+  url = url.arg(userUrl)
             .arg(settings.value("apiKey").toString())
             .arg(offset);
 

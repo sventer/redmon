@@ -2,6 +2,13 @@ cmake_minimum_required(VERSION 2.8.11)
 
 project(RedMon)
 
+set(WINDOWS_KITS_PATH "c:\\Program Files (x86)\\Windows Kits\\8.1\\Lib\\winv6.3\\um\\x64" CACHE PATH "Location of Windows Kits where glu32 and user32 can be found")
+if(WINDOWS_KITS_PATH STREQUAL "")
+	message(ERROR "Qt needs to find glu32 and user32")
+endif(WINDOWS_KITS_PATH STREQUAL "")
+
+set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${WINDOWS_KITS_PATH})
+
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 find_package(Qt5 COMPONENTS Core Gui Widgets Network Xml REQUIRED)

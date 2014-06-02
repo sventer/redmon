@@ -34,6 +34,7 @@ class QNetworkReply;
 class QPushButton;
 class QResizeEvent;
 class QTimer;
+class QTableView;
 
 class DataLoader;
 
@@ -73,6 +74,7 @@ private:
   QPushButton* m_stopButton;
 
   QListView* m_issuesList;
+  QTableView* m_issuesTable;
 
   // The worker object we use to load our issues from the server.
   DataLoader* m_dataLoader;
