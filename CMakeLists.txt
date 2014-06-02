@@ -4,8 +4,6 @@ project(RedMon)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CMAKE_LIBRARY_PATH "C:\\Program Files (x86)\\Windows Kits\\8.0\\Lib\\win8\\um\\x64")
-
 find_package(Qt5 COMPONENTS Core Gui Widgets Network Xml REQUIRED)
 
 file(GLOB_RECURSE redmon_SOURCE_FILES "src/*.cpp" "src/*.h")
