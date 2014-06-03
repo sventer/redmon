@@ -106,7 +106,7 @@ MainWindow::MainWindow(QWidget* parent)
 
   m_issuesTable = new QTableView;
   m_issuesTable->setFrameShape(QFrame::NoFrame);
-  //m_issuesTable->setItemDelegate(new IssueTableItemDelegate);
+  m_issuesTable->setItemDelegate(new IssueTableItemDelegate);
   m_issuesTable->setModel(new IssuesTableModel());
 
   // Set up the layouts.

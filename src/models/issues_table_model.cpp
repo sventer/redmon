@@ -22,6 +22,7 @@
 #include "models/issues_table_model.h"
 
 #include <QVariant>
+#include <QDebug>
 
 #include "data/data.h"
 
@@ -40,7 +41,10 @@ int IssuesTableModel::columnCount(const QModelIndex& parent) const {
 	if (parent.isValid())
 		return 0;
 
-	return Data::Get().issues.size();
+	qDebug() << "number of issues " << QString::number(Data::Get().issues.size());
+
+	//return Data::Get().issues.size();
+	return 5;
 }
 
 QVariant IssuesTableModel::data(const QModelIndex& index, int role) const {
@@ -48,6 +52,8 @@ QVariant IssuesTableModel::data(const QModelIndex& index, int role) const {
 		return QVariant();
 
 	const Issue& issue = Data::Get().issues.at(index.row());
+
+	qDebug() << "table column number [" << QString::number(index.column()) << "]";
 
 	switch (index.column()) {
 	case 0:
@@ -58,6 +64,8 @@ QVariant IssuesTableModel::data(const QModelIndex& index, int role) const {
 		return issue.projectName;
 	case 3:
 		return issue.priorityName;
+	case 4:
+		return issue.hoursSpent;
 	}
 
 	return QVariant();
@@ -74,9 +82,15 @@ QVariant IssuesTableModel::headerData(int section, Qt::Orientation orientation, 
 			case 2:
 				return QString("Project");
 			case 3:
+				return QString("Hours Spent");
+			case 4:
 				return QString("Priority");
 			}
+		} else {
+			qDebug() << "====== other orientation supplied";
 		}
+	} else {
+		qDebug() << "Some other role was detected [[" << QString::number(role) << "]]";
 	}
 
 	return QVariant();

@@ -22,11 +22,13 @@
 #include "models/issue_table_item_delegate.h"
 
 #include <QTableView>
+#include <QPainter>
+#include <QDebug>
 
 #include "models/issues_table_model.h"
 
 const int kItemBorderSize = 5;
-const int kTaxtSpacing = 1;
+const int kTextSpacing = 1;
 
 IssueTableItemDelegate::IssueTableItemDelegate(QObject* parent)
 : QStyledItemDelegate(parent) {
@@ -36,10 +38,53 @@ IssueTableItemDelegate::~IssueTableItemDelegate() {
 }
 
 void IssueTableItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const {
+	const Issue& issue = issueFromIndex(index);
 
-	int i = 0;
-	for (int t = 0; t < 10; t++)
-		i++;
+	painter->save();
+
+	QRect textRect;
+
+	QPen darkGrayPen(QColor(96, 96, 96));
+	QBrush backgroundBrush(QColor(240, 240, 240));
+
+	QRect drawRect = option.rect;
+
+	painter->setPen(QPen(Qt::NoPen));
+
+	if (option.state && QStyle::State_Selected) {
+		painter->setBrush(backgroundBrush);
+		painter->drawRect(option.rect);
+	}
+
+	drawRect.adjust(kItemBorderSize, kItemBorderSize, -kItemBorderSize, -kItemBorderSize);
+
+	switch (index.column()) {
+	case 0:  // this is the issue id
+		painter->setPen(darkGrayPen);
+		painter->setFont(getIdTextFont(option.font));
+		painter->drawText(drawRect, Qt::AlignLeft, QString::number(issue.id));
+		break;
+	case 1:  // this is the subject
+		painter->setPen(darkGrayPen);
+		painter->setFont(getIdTextFont(option.font));
+		painter->drawText(drawRect, Qt::AlignLeft, issue.subject);
+		break;
+	case 2:  // this is the project description
+		painter->setPen(darkGrayPen);
+		painter->setFont(getIdTextFont(option.font));
+		painter->drawText(drawRect, Qt::AlignLeft, issue.projectName);
+		break;
+	case 3:  // this is the project description
+		painter->setPen(darkGrayPen);
+		painter->setFont(getIdTextFont(option.font));
+		painter->drawText(drawRect, Qt::AlignLeft, QString::number(issue.hoursSpent, 'f', 2));
+		break;
+	case 4:  // this is the project description
+		painter->setPen(darkGrayPen);
+		painter->setFont(getIdTextFont(option.font));
+		painter->drawText(drawRect, Qt::AlignLeft, issue.priorityName);
+		break;
+	}
 }
 
 QSize IssueTableItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const {
