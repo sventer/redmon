@@ -51,8 +51,6 @@ QVariant IssuesTableModel::data(const QModelIndex& index, int role) const {
 
 	const Issue& issue = Data::Get().issues.at(index.row());
 
-	qDebug() << "table column number [" << QString::number(index.column()) << "]";
-
 	switch (index.column()) {
 	case 0:
 		return QString::number(issue.id);
@@ -91,7 +89,6 @@ QVariant IssuesTableModel::headerData(int section, Qt::Orientation orientation, 
 }
 
 const Issue& IssuesTableModel::issue(const QModelIndex& index) const {
-	qDebug() << "######### row number [" << QString::number(index.row()) << "]";
 	return Data::Get().issues.at(index.row());
 }
 

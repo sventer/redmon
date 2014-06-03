@@ -107,12 +107,14 @@ MainWindow::MainWindow(QWidget* parent)
   m_issuesTable = new QTableView;
   m_issuesTable->setFrameShape(QFrame::NoFrame);
   m_issuesTable->setItemDelegate(new IssueTableItemDelegate);
-  m_issuesTable->setModel(new IssuesTableModel());
   m_issuesTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-  //m_issuesTable->horizontalHeader()->setStretchLastSection(true);
+  m_issuesTable->verticalHeader()->hide();
+  m_issuesTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+  m_issuesTable->setSelectionMode(QAbstractItemView::SingleSelection);
+  m_issuesTable->setModel(new IssuesTableModel());
+  connect(m_issuesTable, SIGNAL(clicked(QModelIndex)), this, SLOT(onSelectIssue(QModelIndex)));
 
   // Set up the layouts.
-
   QHBoxLayout* buttonsLayout = new QHBoxLayout;
   buttonsLayout->setMargin(5);
   buttonsLayout->setSpacing(5);
@@ -215,6 +217,7 @@ void MainWindow::onDataLoaderFinished() {
 
   // Reset the issues list to update it.
   m_issuesList->reset();
+  m_issuesTable->reset();
 
   // Set the update button back to an enabled state.
   m_updateButton->setText("Update");
@@ -229,6 +232,11 @@ void MainWindow::onIssueListTimerTimeout() { onUpdateButtonClicked(); }
 void MainWindow::onIssuesListCurrentChanged(const QModelIndex& current,
                                             const QModelIndex& previous) {
   qDebug() << current;
+}
+
+void MainWindow::onSelectIssue(const QModelIndex& selection) {
+	qDebug() << selection.row();
+	m_issuesTable->selectRow(selection.row());
 }
 
 void MainWindow::startTimer() {

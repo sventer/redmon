@@ -59,6 +59,7 @@ private slots:
   void onIssueListTimerTimeout();
   void onIssuesListCurrentChanged(const QModelIndex& current,
                                   const QModelIndex& previous);
+  void onSelectIssue(const QModelIndex& slection);
 
 private:
   void startTimer();

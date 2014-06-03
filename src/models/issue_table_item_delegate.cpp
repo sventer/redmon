@@ -43,6 +43,17 @@ void IssueTableItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
 
 	painter->save();
 
+	if (option.showDecorationSelected && (option.state & QStyle::State_Selected)) {
+		if (option.state & QStyle::State_Active) {
+			painter->fillRect(option.rect, option.palette.highlight().color());
+		} else {
+			QPalette p = option.palette;
+			painter->fillRect(option.rect, p.color(QPalette::Inactive, QPalette::Background));
+		}
+
+		return;
+	}
+
 	QRect textRect;
 
 	QPen darkGrayPen(QColor(96, 96, 96));
