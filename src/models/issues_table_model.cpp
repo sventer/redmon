@@ -41,9 +41,7 @@ int IssuesTableModel::columnCount(const QModelIndex& parent) const {
 	if (parent.isValid())
 		return 0;
 
-	qDebug() << "number of issues " << QString::number(Data::Get().issues.size());
-
-	//return Data::Get().issues.size();
+	// the number of columns in our model that will be displayed.
 	return 5;
 }
 
@@ -59,13 +57,13 @@ QVariant IssuesTableModel::data(const QModelIndex& index, int role) const {
 	case 0:
 		return QString::number(issue.id);
 	case 1:
-		return issue.subject;
-	case 2:
-		return issue.projectName;
-	case 3:
 		return issue.priorityName;
-	case 4:
+	case 2:
 		return issue.hoursSpent;
+	case 3:
+		return issue.projectName;
+	case 4:
+		return issue.subject;
 	}
 
 	return QVariant();
@@ -78,25 +76,22 @@ QVariant IssuesTableModel::headerData(int section, Qt::Orientation orientation, 
 			case 0:
 				return QString("Id");
 			case 1:
-				return QString("Subject");
-			case 2:
-				return QString("Project");
-			case 3:
-				return QString("Hours Spent");
-			case 4:
 				return QString("Priority");
+			case 2:
+				return QString("Hours Spent");
+			case 3:
+				return QString("Project");
+			case 4:
+				return QString("Subject");
 			}
-		} else {
-			qDebug() << "====== other orientation supplied";
 		}
-	} else {
-		qDebug() << "Some other role was detected [[" << QString::number(role) << "]]";
 	}
 
 	return QVariant();
 }
 
 const Issue& IssuesTableModel::issue(const QModelIndex& index) const {
+	qDebug() << "######### row number [" << QString::number(index.row()) << "]";
 	return Data::Get().issues.at(index.row());
 }
 

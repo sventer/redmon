@@ -26,6 +26,7 @@
 #include <QDebug>
 
 #include "models/issues_table_model.h"
+#include "data/data.h"
 
 const int kItemBorderSize = 5;
 const int kTextSpacing = 1;
@@ -50,12 +51,12 @@ void IssueTableItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
 	QRect drawRect = option.rect;
 
 	painter->setPen(QPen(Qt::NoPen));
-
+#if 0
 	if (option.state && QStyle::State_Selected) {
 		painter->setBrush(backgroundBrush);
 		painter->drawRect(option.rect);
 	}
-
+#endif  // 0
 	drawRect.adjust(kItemBorderSize, kItemBorderSize, -kItemBorderSize, -kItemBorderSize);
 
 	switch (index.column()) {
@@ -64,35 +65,35 @@ void IssueTableItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
 		painter->setFont(getIdTextFont(option.font));
 		painter->drawText(drawRect, Qt::AlignLeft, QString::number(issue.id));
 		break;
-	case 1:  // this is the subject
+	case 1:  // this is the project description
 		painter->setPen(darkGrayPen);
 		painter->setFont(getIdTextFont(option.font));
-		painter->drawText(drawRect, Qt::AlignLeft, issue.subject);
+		painter->drawText(drawRect, Qt::AlignLeft, issue.priorityName);
 		break;
 	case 2:  // this is the project description
 		painter->setPen(darkGrayPen);
 		painter->setFont(getIdTextFont(option.font));
-		painter->drawText(drawRect, Qt::AlignLeft, issue.projectName);
+		painter->drawText(drawRect, Qt::AlignLeft, QString::number(issue.hoursSpent, 'f', 2));
 		break;
 	case 3:  // this is the project description
 		painter->setPen(darkGrayPen);
 		painter->setFont(getIdTextFont(option.font));
-		painter->drawText(drawRect, Qt::AlignLeft, QString::number(issue.hoursSpent, 'f', 2));
+		painter->drawText(drawRect, Qt::AlignLeft, issue.projectName);
 		break;
-	case 4:  // this is the project description
+	case 4:  // this is the subject
 		painter->setPen(darkGrayPen);
 		painter->setFont(getIdTextFont(option.font));
-		painter->drawText(drawRect, Qt::AlignLeft, issue.priorityName);
+		painter->drawText(drawRect, Qt::AlignLeft, issue.subject);
 		break;
 	}
 }
 
 QSize IssueTableItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const {
-	const Issue& issue = issueFromIndex(index);
+	QFontMetrics metrics(getIdTextFont(option.font));
 
-	const QTableView* tableView = static_cast<const QTableView*>(option.widget);
+	QString colStr = index.data().toString();
 
-	return (QSize(100, 20));
+	return (QSize(metrics.width(colStr) + (metrics.width('Q') * 2), metrics.height() + 5));
 }
 
 const Issue& IssueTableItemDelegate::issueFromIndex(const QModelIndex& index) const {

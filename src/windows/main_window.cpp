@@ -108,6 +108,8 @@ MainWindow::MainWindow(QWidget* parent)
   m_issuesTable->setFrameShape(QFrame::NoFrame);
   m_issuesTable->setItemDelegate(new IssueTableItemDelegate);
   m_issuesTable->setModel(new IssuesTableModel());
+  m_issuesTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+  //m_issuesTable->horizontalHeader()->setStretchLastSection(true);
 
   // Set up the layouts.
 
