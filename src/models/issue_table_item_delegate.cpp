@@ -39,22 +39,42 @@ IssueTableItemDelegate::~IssueTableItemDelegate() {
 }
 
 void IssueTableItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const {
-	const Issue& issue = issueFromIndex(index);
-
 	painter->save();
 
 	if (option.showDecorationSelected && (option.state & QStyle::State_Selected)) {
 		if (option.state & QStyle::State_Active) {
 			painter->fillRect(option.rect, QColor(200, 247, 250));
-			painter->setPen(QColor(0, 0, 0));
+      drawText(painter, option, index);
 		}
-		else {
-			QPalette p = option.palette;
-			painter->fillRect(option.rect, p.color(QPalette::Inactive, QPalette::Background));
-		}
-
-		return;
+  } else {
+    //QPalette p = option.palette;
+		painter->fillRect(option.rect, QColor(255, 255, 255));  // p.color(QPalette::Inactive, QPalette::Background));
+    drawText(painter, option, index);
 	}
+}
+
+QSize IssueTableItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const {
+	QFontMetrics metrics(getIdTextFont(option.font));
+
+	QString colStr = index.data().toString();
+
+	return (QSize(metrics.width(colStr) + (metrics.width('Q') * 2), metrics.height() + 5));
+}
+
+const Issue& IssueTableItemDelegate::issueFromIndex(const QModelIndex& index) const {
+	const IssuesTableModel* model = static_cast<const IssuesTableModel*>(index.model());
+	return model->issue(index);
+}
+
+QFont IssueTableItemDelegate::getIdTextFont(const QFont& font) {
+	QFont result(font);
+	result.setPixelSize(12);
+	result.setBold(false);
+	return result;
+}
+
+void IssueTableItemDelegate::drawText(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const {
+	const Issue& issue = issueFromIndex(index);
 
 	QRect textRect;
 
@@ -63,13 +83,8 @@ void IssueTableItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
 
 	QRect drawRect = option.rect;
 
-	painter->setPen(QPen(Qt::NoPen));
-#if 0
-	if (option.state && QStyle::State_Selected) {
-		painter->setBrush(backgroundBrush);
-		painter->drawRect(option.rect);
-	}
-#endif  // 0
+	//painter->setPen(QPen(Qt::NoPen));
+
 	drawRect.adjust(kItemBorderSize, kItemBorderSize, -kItemBorderSize, -kItemBorderSize);
 
 	switch (index.column()) {
@@ -99,26 +114,6 @@ void IssueTableItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
 		painter->drawText(drawRect, Qt::AlignLeft, issue.subject);
 		break;
 	}
-}
-
-QSize IssueTableItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const {
-	QFontMetrics metrics(getIdTextFont(option.font));
-
-	QString colStr = index.data().toString();
-
-	return (QSize(metrics.width(colStr) + (metrics.width('Q') * 2), metrics.height() + 5));
-}
-
-const Issue& IssueTableItemDelegate::issueFromIndex(const QModelIndex& index) const {
-	const IssuesTableModel* model = static_cast<const IssuesTableModel*>(index.model());
-	return model->issue(index);
-}
-
-QFont IssueTableItemDelegate::getIdTextFont(const QFont& font) {
-	QFont result(font);
-	result.setPixelSize(12);
-	result.setBold(false);
-	return result;
 }
 
 #if 0

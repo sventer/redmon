@@ -41,6 +41,7 @@ public:
 
 	const Issue& issue(const QModelIndex& index) const;
 
+  // instead of using one of the insertRow(s) functions we provide our own insertion function
   bool insertIssue(const Issue& issue);
 
 private:
