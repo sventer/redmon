@@ -1,0 +1,12 @@
+Try to find a way to log issues on GitHub but could not find any means.
+
+Issues:
+1. The selected row:
+  a. When updating the highlight on the selected row is removed
+  b. When updating the text is not rendered.
+  
+2. Initial data
+  a. When the client starts the client should do a requires for data.
+
+3. Loading of data
+  a. Somtimes the client needs to be restarted before data is updated.

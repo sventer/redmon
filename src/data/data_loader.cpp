@@ -52,6 +52,7 @@ void DataLoader::swapIssues(QVector<Issue>* issues) { issues->swap(m_issues); }
 
 void DataLoader::onIssuesManagerReply(QNetworkReply* reply) {
   qDebug() << "DataLoader::onIssuesManagerReply";
+  qDebug() << "DataLoader::onIssuesManagerReply bytes receiced [" << QString::number(reply->bytesAvailable()) << "]";
 
   QByteArray data(reply->read(reply->bytesAvailable()));
 

@@ -45,6 +45,7 @@ void IssueTableItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
 		if (option.state & QStyle::State_Active) {
 			painter->fillRect(option.rect, QColor(200, 247, 250));
       drawText(painter, option, index);
+      qDebug() << "Now painting selected row";
 		}
   } else {
     //QPalette p = option.palette;
