@@ -28,13 +28,20 @@
 
 IssuesTableModel::IssuesTableModel(QObject* parent)
 	: QAbstractTableModel(parent) {
+  if (Data::Get().issues.count() >= 1) {
+    for (int idx = 0; idx < Data::Get().issues.count(); ++idx) {
+      _issues.push_back(Data::Get().issues.at(idx));
+    }
+  }
 }
 
 int IssuesTableModel::rowCount(const QModelIndex& parent) const {
 	if (parent.isValid())
 		return 0;
 
-	return Data::Get().issues.size();
+  return _issues.size();
+
+	//return Data::Get().issues.size();
 }
 
 int IssuesTableModel::columnCount(const QModelIndex& parent) const {
@@ -49,7 +56,9 @@ QVariant IssuesTableModel::data(const QModelIndex& index, int role) const {
 	if (index.row() < 0 || index.row() > Data::Get().issues.size())
 		return QVariant();
 
-	const Issue& issue = Data::Get().issues.at(index.row());
+	const Issue& issue = _issues.at(index.row());
+
+	qDebug() << "table column number [" << QString::number(index.column()) << "]";
 
 	switch (index.column()) {
 	case 0:
@@ -89,6 +98,29 @@ QVariant IssuesTableModel::headerData(int section, Qt::Orientation orientation, 
 }
 
 const Issue& IssuesTableModel::issue(const QModelIndex& index) const {
-	return Data::Get().issues.at(index.row());
+  return _issues.at(index.row());
 }
 
+bool IssuesTableModel::insertIssue(const Issue& issue) {
+  if (!containsIssue(issue.id)) {
+    beginInsertRows(QModelIndex(), 0, 0);
+
+    _issues.push_back(issue);
+
+    endInsertRows();
+
+    return true;
+  }
+
+  return false;
+}
+
+bool IssuesTableModel::containsIssue(int issueId) {
+  for (QVector<Issue>::iterator bi = _issues.begin(), ei = _issues.end(); bi != ei; ++bi) {
+    Issue issue = *bi;
+    if (issue.id == issueId)
+      return true;
+  }
+
+  return false;
+}

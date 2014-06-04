@@ -37,6 +37,7 @@ class QTimer;
 class QTableView;
 
 class DataLoader;
+class IssuesTableModel;
 
 class MainWindow : public QWidget {
   Q_OBJECT
@@ -76,6 +77,7 @@ private:
 
   QListView* m_issuesList;
   QTableView* m_issuesTable;
+  IssuesTableModel* m_tableIssuesModel;
 
   // The worker object we use to load our issues from the server.
   DataLoader* m_dataLoader;

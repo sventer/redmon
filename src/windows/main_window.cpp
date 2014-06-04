@@ -58,23 +58,6 @@ MainWindow::MainWindow(QWidget* parent)
   m_dataLoader = new DataLoader(this);
   connect(m_dataLoader, SIGNAL(finished()), this, SLOT(onDataLoaderFinished()));
 
-  Issue issue;
-
-  issue.id = 1;
-  issue.subject = "This is a long subject";
-  issue.projectName = "Project 1";
-  Data::Get().issues.append(issue);
-
-  issue.id = 2;
-  issue.subject = "This is another long subject for testing purposes";
-  issue.projectName = "Project 1";
-  Data::Get().issues.append(issue);
-
-  issue.id = 3;
-  issue.subject = "This is another long subject";
-  issue.projectName = "Another Project";
-  Data::Get().issues.append(issue);
-
   // Create controls.
 
   m_settingsButton = new QPushButton("Settings");
@@ -94,24 +77,15 @@ MainWindow::MainWindow(QWidget* parent)
 
   IssuesModel* issues = new IssuesModel();
 
-  m_issuesList = new QListView(this);
-  m_issuesList->setFrameShape(QFrame::NoFrame);
-  m_issuesList->setResizeMode(QListView::Adjust);
-  m_issuesList->setItemDelegate(new IssueListItemDelegate);
-  m_issuesList->setModel(issues);
-  connect(
-      m_issuesList->selectionModel(),
-      SIGNAL(currentChanged(const QModelIndex&, const QModelIndex&)), this,
-      SLOT(onIssuesListCurrentChanged(const QModelIndex&, const QModelIndex&)));
-
   m_issuesTable = new QTableView;
+  m_tableIssuesModel = new IssuesTableModel;
   m_issuesTable->setFrameShape(QFrame::NoFrame);
   m_issuesTable->setItemDelegate(new IssueTableItemDelegate);
   m_issuesTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
   m_issuesTable->verticalHeader()->hide();
   m_issuesTable->setSelectionBehavior(QAbstractItemView::SelectRows);
   m_issuesTable->setSelectionMode(QAbstractItemView::SingleSelection);
-  m_issuesTable->setModel(new IssuesTableModel());
+  m_issuesTable->setModel(m_tableIssuesModel);
   connect(m_issuesTable, SIGNAL(clicked(QModelIndex)), this, SLOT(onSelectIssue(QModelIndex)));
 
   // Set up the layouts.
@@ -127,7 +101,6 @@ MainWindow::MainWindow(QWidget* parent)
   mainLayout->setMargin(0);
   mainLayout->setSpacing(0);
   mainLayout->addLayout(buttonsLayout);
-  mainLayout->addWidget(m_issuesList);
   mainLayout->addWidget(m_issuesTable);
 
   setLayout(mainLayout);
@@ -178,6 +151,7 @@ void MainWindow::onUpdateButtonClicked() {
 }
 
 void MainWindow::onStartButtonClicked() {
+#if 0
   // If we are already tracking time, don't do anything.
   if (m_isTrackingTime)
     return;
@@ -197,6 +171,7 @@ void MainWindow::onStartButtonClicked() {
 
   // Start.
   startTrackingTime(issue.id);
+#endif  // 0
 }
 
 void MainWindow::onStopButtonClicked() {
@@ -216,8 +191,17 @@ void MainWindow::onDataLoaderFinished() {
   m_dataLoader->swapIssues(&Data::Get().issues);
 
   // Reset the issues list to update it.
-  m_issuesList->reset();
-  m_issuesTable->reset();
+  //m_issuesList->reset();
+
+  //m_tableIssuesModel->dataChanged();
+
+  for (int idx = 0; idx < Data::Get().issues.count(); ++idx) {
+    if (m_tableIssuesModel->insertIssue(Data::Get().issues.at(idx)))
+      int i = 10;
+  }
+  
+  //QModelIndex index = m_tableIssuesModel->index(0, 0, QModelIndex());
+  //m_issuesTable->reset();
 
   // Set the update button back to an enabled state.
   m_updateButton->setText("Update");

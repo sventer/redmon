@@ -23,6 +23,7 @@
 #define ISSUES_TABLE_MODEL
 
 #include <QAbstractItemModel>
+#include <QVector>
 
 #include "data/issue.h"
 
@@ -39,6 +40,13 @@ public:
 	QVariant headerData(int section, Qt::Orientation orientation, int role) const;
 
 	const Issue& issue(const QModelIndex& index) const;
+
+  bool insertIssue(const Issue& issue);
+
+private:
+  bool containsIssue(int issueId);
+
+  QVector<Issue> _issues;
 
 	Q_DISABLE_COPY(IssuesTableModel)
 };

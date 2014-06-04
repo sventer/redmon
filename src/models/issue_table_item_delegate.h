@@ -38,6 +38,7 @@ public:
 private:
 	const Issue& issueFromIndex(const QModelIndex& index) const;
 	static QFont getIdTextFont(const QFont& font);
+	void paintTable(const QPainter& painter, const QPen& pen, const QRect& rect);
 #if 0
 	static QString getInfoLineText(const Issue& issue);
 #endif  // 0
