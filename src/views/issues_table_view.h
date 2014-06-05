@@ -41,6 +41,13 @@ public:
 public slots:
   virtual void currentChanged(const QModelIndex& current, const QModelIndex& previous) override;
   void setInitialSelection();
+
+private:
+  void storeCurrentSelection();
+
+  // recode the current selected item.
+  int m_selectedRow;
+  int m_selectedIssueId;
 };
 
 #endif  // ISSUES_TABLE_VIEW
