@@ -42,14 +42,10 @@ void IssueTableItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
 	painter->save();
 
 	if (option.showDecorationSelected && (option.state & QStyle::State_Selected)) {
-		if (option.state & QStyle::State_Active) {
-			painter->fillRect(option.rect, QColor(200, 247, 250));
-      drawText(painter, option, index);
-      qDebug() << "Now painting selected row";
-		}
+		painter->fillRect(option.rect, QColor(200, 247, 250));
+    drawText(painter, option, index);
   } else {
-    //QPalette p = option.palette;
-		painter->fillRect(option.rect, QColor(255, 255, 255));  // p.color(QPalette::Inactive, QPalette::Background));
+		painter->fillRect(option.rect, QColor(255, 255, 255));
     drawText(painter, option, index);
 	}
 }

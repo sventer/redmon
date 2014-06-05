@@ -27,7 +27,7 @@
 #include "data/data.h"
 
 IssuesTableModel::IssuesTableModel(QObject* parent)
-	: QAbstractTableModel(parent) {
+  : QAbstractTableModel(parent), _selectedRow(0) {
   if (Data::Get().issues.count() >= 1) {
     for (int idx = 0; idx < Data::Get().issues.count(); ++idx) {
       _issues.push_back(Data::Get().issues.at(idx));

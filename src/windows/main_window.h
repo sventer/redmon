@@ -46,6 +46,9 @@ public:
   explicit MainWindow(QWidget* parent = 0);
   virtual ~MainWindow();
 
+signals:
+  void onDataLoaded();
+
 protected:
   void moveEvent(QMoveEvent* event);
   void resizeEvent(QResizeEvent* event);

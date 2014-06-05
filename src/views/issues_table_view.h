@@ -19,38 +19,28 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef ISSUES_TABLE_MODEL
-#define ISSUES_TABLE_MODEL
+#ifndef ISSUES_TABLE_VIEW
+#define ISSUES_TABLE_VIEW
 
-#include <QAbstractItemModel>
-#include <QVector>
+#include <QTableView>
+#include <QItemSelectionModel>
 
-#include "data/issue.h"
-
-class IssuesTableModel : public QAbstractTableModel {
-	Q_OBJECT
+class IssuesTableSelectionModel : public QItemSelectionModel {
+  Q_OBJECT
 
 public:
-	explicit IssuesTableModel(QObject* parent = 0);
-
-	virtual int rowCount(const QModelIndex& parent = QModelIndex()) const override;
-	virtual  int columnCount(const QModelIndex& parent = QModelIndex()) const override;
-	virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-
-	QVariant headerData(int section, Qt::Orientation orientation, int role) const;
-
-	const Issue& issue(const QModelIndex& index) const;
-
-  // instead of using one of the insertRow(s) functions we provide our own insertion function
-  bool insertIssue(const Issue& issue);
-
-private:
-  bool containsIssue(int issueId);
-  int _selectedRow;
-
-  QVector<Issue> _issues;
-
-	Q_DISABLE_COPY(IssuesTableModel)
+  IssuesTableSelectionModel(QAbstractItemModel* model);
 };
 
-#endif  // ISSUES_TABLE_MODEL
+class IssuesTableView : public QTableView {
+  Q_OBJECT
+
+public:
+  IssuesTableView(QWidget* parent = 0);
+
+public slots:
+  virtual void currentChanged(const QModelIndex& current, const QModelIndex& previous) override;
+  void setInitialSelection();
+};
+
+#endif  // ISSUES_TABLE_VIEW
