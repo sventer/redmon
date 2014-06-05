@@ -21,9 +21,66 @@
 
 #include "dialogs/time_commit_dialog.h"
 
+#include <QLabel>
+#include <QLineEdit>
+#include <QComboBox>
+#include <QPushButton>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QFormLayout>
+
 TimeCommitDialog::TimeCommitDialog() {
   // this dialog is model
   setModal(true);
+
+  //setFixedSize(250, 190);
+
+  QHBoxLayout* issueNumberLayout = new QHBoxLayout;
+  QLabel* issueNumberLabel = new QLabel("Issue Number: ");
+  m_issueNumber = new QLabel("2983", this);
+  issueNumberLayout->addWidget(issueNumberLabel);
+  issueNumberLayout->addWidget(m_issueNumber);
+
+  QVBoxLayout* issueDescriptionLayout = new QVBoxLayout;
+  QLabel* issueDescriptionLabel = new QLabel("Issue Description:");
+  m_issueDescription = new QLabel("This is the issues description and cannot be edited.");
+  issueDescriptionLayout->addWidget(issueDescriptionLabel);
+  issueDescriptionLayout->addWidget(m_issueDescription);
+
+  QHBoxLayout* timeSpentLayout = new QHBoxLayout;
+  QLabel* timeSpentLabel = new QLabel("Time Spent: ");
+  m_timeSpent = new QLabel("00:00");
+  timeSpentLayout->addWidget(timeSpentLabel);
+  timeSpentLayout->addWidget(m_timeSpent);
+
+  QHBoxLayout* activitySelectionLayout = new QHBoxLayout;
+
+  QLabel* m_timeActivityLabel = new QLabel("Issue Activity:");
+  m_timeActivity = new QComboBox;
+  activitySelectionLayout->addWidget(m_timeActivityLabel);
+  activitySelectionLayout->addWidget(m_timeActivity);
+
+  QVBoxLayout* activityNotes = new QVBoxLayout;
+  QLabel* activityNoteLabel = new QLabel("Activity Notes:");
+  m_activityNote = new QLineEdit("Notes");
+  activityNotes->addWidget(activityNoteLabel);
+  activityNotes->addWidget(m_activityNote);
+
+  QHBoxLayout* buttonLayout = new QHBoxLayout;
+  m_commitTimeButton = new QPushButton("Apply");
+  m_cancelTimeButton = new QPushButton("Cancel");
+  buttonLayout->addWidget(m_commitTimeButton);
+  buttonLayout->addWidget(m_cancelTimeButton);
+
+  QFormLayout* activityLayout = new QFormLayout;
+  //QVBoxLayout* activityLayout = new QVBoxLayout;
+  activityLayout->addRow(issueNumberLayout);
+  activityLayout->addRow(issueDescriptionLayout);
+  activityLayout->addRow(timeSpentLayout);
+  activityLayout->addRow(activitySelectionLayout);
+  activityLayout->addRow(activityNotes);
+  activityLayout->addRow(buttonLayout);
+  setLayout(activityLayout);
 }
 
 TimeCommitDialog::~TimeCommitDialog() {

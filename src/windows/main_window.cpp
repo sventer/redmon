@@ -44,9 +44,14 @@
 #include "models/issues_table_model.h"
 #include "models/issue_table_item_delegate.h"
 #include "views/issues_table_view.h"
+#include "dialogs/time_commit_dialog.h"
 
 MainWindow::MainWindow(QWidget* parent)
   : QWidget(parent), m_isTrackingTime(false), m_isInitializeDone(false) {
+
+  m_timeCommitDialog = new TimeCommitDialog();
+  m_timeCommitDialog->hide();
+
   // Position the window to the last place we stored it at.
   QPoint mainWindowPos(Config::Get().mainWindowPos());
   QSize mainWindowSize(Config::Get().mainWindowSize());
@@ -167,20 +172,19 @@ void MainWindow::onUpdateButtonClicked() {
 }
 
 void MainWindow::onStartButtonClicked() {
-#if 0
   // If we are already tracking time, don't do anything.
   if (m_isTrackingTime)
     return;
-
+#if 0
   // If there is nothing selected in the issue list, don't do anything.
   QItemSelectionModel* selection = m_issuesList->selectionModel();
   if (!selection || !selection->hasSelection())
     return;
-
+#endif  // 0
   // Swap the buttons out.
   m_startButton->hide();
   m_stopButton->show();
-
+#if 0
   // Get the issue.
   IssuesModel* model = static_cast<IssuesModel*>(m_issuesList->model());
   const Issue& issue = model->issue(selection->currentIndex());
@@ -192,8 +196,10 @@ void MainWindow::onStartButtonClicked() {
 
 void MainWindow::onStopButtonClicked() {
   // If we are not tracking time, don't do anything.
-  if (!m_isTrackingTime)
-    return;
+  //if (!m_isTrackingTime)
+    //return;
+
+  m_timeCommitDialog->show();
 
   // Swap the buttons out.
   m_startButton->show();

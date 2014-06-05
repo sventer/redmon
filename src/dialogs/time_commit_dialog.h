@@ -27,7 +27,7 @@
 class QLabel;
 class QComboBox;
 class QLineEdit;
-class QButton;
+class QPushButton;
 
 class TimeCommitDialog : public QDialog {
   Q_OBJECT
@@ -37,11 +37,13 @@ public:
   virtual ~TimeCommitDialog();
 
 private:
-  QLabel* m_totalTimeSpentLabel;
-  QComboBox* m_timeSpenActivity;
+  QLabel* m_issueNumber;
+  QLabel* m_issueDescription;
+  QLabel* m_timeSpent;
+  QComboBox* m_timeActivity;
   QLineEdit* m_activityNote;
-  QButton* m_commitTimeButton;
-  QButton* m_cancelTimeButton;
+  QPushButton* m_commitTimeButton;
+  QPushButton* m_cancelTimeButton;
 };
 
 #endif  // TIME_COMMIT_DIALOG

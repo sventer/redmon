@@ -38,6 +38,7 @@ class QTableView;
 
 class DataLoader;
 class IssuesTableModel;
+class TimeCommitDialog;
 
 class MainWindow : public QWidget {
   Q_OBJECT
@@ -95,6 +96,8 @@ private:
 
   // have we been shown before?
   bool m_isInitializeDone;
+
+  TimeCommitDialog* m_timeCommitDialog;
 
   Q_DISABLE_COPY(MainWindow)
 };
