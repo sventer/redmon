@@ -46,6 +46,8 @@ public:
   explicit MainWindow(QWidget* parent = 0);
   virtual ~MainWindow();
 
+  virtual void showEvent(QShowEvent* event) override;
+
 signals:
   void onDataLoaded();
 
@@ -90,6 +92,9 @@ private:
 
   // Set to true if we are currently tracking time.
   bool m_isTrackingTime;
+
+  // have we been shown before?
+  bool m_isInitializeDone;
 
   Q_DISABLE_COPY(MainWindow)
 };

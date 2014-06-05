@@ -48,7 +48,7 @@
 #include "views/issues_table_view.h"
 
 MainWindow::MainWindow(QWidget* parent)
-  : QWidget(parent), m_isTrackingTime(false) {
+  : QWidget(parent), m_isTrackingTime(false), m_isInitializeDone(false) {
   // Position the window to the last place we stored it at.
   QPoint mainWindowPos(Config::Get().mainWindowPos());
   QSize mainWindowSize(Config::Get().mainWindowSize());
@@ -112,6 +112,21 @@ MainWindow::MainWindow(QWidget* parent)
 }
 
 MainWindow::~MainWindow() {}
+
+void MainWindow::showEvent(QShowEvent* event) {
+  QWidget::showEvent(event);
+
+  if (event->spontaneous())
+    return;
+
+  // we return if we have performed the initial update request
+  if (m_isInitializeDone)
+    return;
+
+  // request an initial issue update
+  onUpdateButtonClicked();
+  m_isInitializeDone = true;
+}
 
 void MainWindow::moveEvent(QMoveEvent* event) {
   QWidget::moveEvent(event);
