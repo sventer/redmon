@@ -19,39 +19,29 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "models/time_activities_model.h"
+#ifndef TIME_COMMIT_DIALOG
+#define TIME_COMMIT_DIALOG
 
-#include <QDebug>
+#include <QDialog>
 
-TimeActivitiesModel::TimeActivitiesModel() {
-}
+class QLabel;
+class QComboBox;
+class QLineEdit;
+class QButton;
 
-TimeActivitiesModel::~TimeActivitiesModel() {
-}
+class TimeCommitDialog : public QDialog {
+  Q_OBJECT
 
-void TimeActivitiesModel::updateFromXml(const QDomElement& issueElement) {
-  int key;
-  QString value;
+public:
+  TimeCommitDialog();
+  virtual ~TimeCommitDialog();
 
-  for (QDomElement elem(issueElement.firstChildElement()); !elem.isNull(); elem = elem.nextSiblingElement()) {
-    if (elem.tagName() == "id") {
-      key = elem.text().toInt();
-    }
+private:
+  QLabel* m_totalTimeSpentLabel;
+  QComboBox* m_timeSpenActivity;
+  QLineEdit* m_activityNote;
+  QButton* m_commitTimeButton;
+  QButton* m_cancelTimeButton;
+};
 
-    if (elem.tagName() == "name") {
-      value = elem.text();
-    }
-  }
-
-  // we dont want to add empty entries
-  if (!value.isEmpty())
-    m_timeActivities.insert(key, value);
-}
-
-QString TimeActivitiesModel::findActivity(int index) const {
-  return QString();
-}
-
-int TimeActivitiesModel::activityCount() const {
-  return m_timeActivities.size();
-}
+#endif  // TIME_COMMIT_DIALOG

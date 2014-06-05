@@ -38,7 +38,6 @@ public:
 
   void updateFromXml(const QDomElement& issueElement);
 
-  void insertActivity(int id, QString activity);
   QString findActivity(int index) const;
   int activityCount() const;
 
