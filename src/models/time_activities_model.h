@@ -19,57 +19,33 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef DATA_DATA_LOADER_H_
-#define DATA_DATA_LOADER_H_
+#ifndef TIME_ACTIVITIES_MODEL
+#define TIME_ACTIVITIES_MODEL
+
+// this is a simple data model that is used to store the activities one can 
+// use to book time against. This model is only updated once for the lifetime
+// of the application.
 
 #include <QDomElement>
-#include <QNetworkAccessManager>
-#include <QVector>
 #include <QMap>
+#include <QString>
+#include <qglobal.h>
 
-class QNetworkReply;
-
-struct Issue;
-struct TimeEntry;
-class TimeEntryLoader;
-class TimeActivitiesModel;
-
-class DataLoader : public QObject {
-  Q_OBJECT
-
+class TimeActivitiesModel {
 public:
-  DataLoader(QObject* parent = 0);
-  virtual ~DataLoader();
+  TimeActivitiesModel();
+  ~TimeActivitiesModel();
 
-  // Start the process of loading the data from the server.
-  void loadData();
-  void loadTimeEntryActivities();
+  void updateFromXml(const QDomElement& issueElement);
 
-  // Swap the issues into the specified list.
-  void swapIssues(QVector<Issue>* issues);
-
-signals:
-  void finished();
-
-private slots:
-  void onIssuesManagerReply(QNetworkReply* reply);
-  void onTimeEntryLoaderFinished(TimeEntryLoader* loader);
-  void onTimeActivityManagerReply(QNetworkReply* reply);
+  void insertActivity(int id, QString activity);
+  QString findActivity(int index) const;
+  int activityCount() const;
 
 private:
-  void startLoadIssues(int offset = 0);
-  static QString buildIssuesUrl(int offset = 0);
-  static QString buildTimeEntryActivitiesURL();
+  QMap<int, QString> m_timeActivities;
 
-  QNetworkAccessManager* m_issuesManager;
-  QNetworkAccessManager* m_timeActivityManager;
-
-  QVector<Issue> m_issues;
-
-  typedef QMap<int, TimeEntryLoader*> TimeEntryLoadersType;
-  TimeEntryLoadersType m_timeEntryLoaders;
-
-  TimeActivitiesModel* m_timeActivitiesModel;
+  Q_DISABLE_COPY(TimeActivitiesModel)
 };
 
-#endif  // DATA_DATA_LOADER_H_
+#endif  // TIME_ACTIVITIES_MODEL

@@ -40,8 +40,6 @@
 #include "config.h"
 #include "data/data.h"
 #include "data/data_loader.h"
-#include "models/issues_model.h"
-#include "models/issue_list_item_delegate.h"
 #include "windows/settings_window.h"
 #include "models/issues_table_model.h"
 #include "models/issue_table_item_delegate.h"
@@ -75,8 +73,6 @@ MainWindow::MainWindow(QWidget* parent)
   m_stopButton = new QPushButton("Stop");
   connect(m_stopButton, SIGNAL(clicked()), this, SLOT(onStopButtonClicked()));
   m_stopButton->hide();
-
-  IssuesModel* issues = new IssuesModel();
 
   m_issuesTable = new IssuesTableView;
   m_tableIssuesModel = new IssuesTableModel;
@@ -125,6 +121,11 @@ void MainWindow::showEvent(QShowEvent* event) {
 
   // request an initial issue update
   onUpdateButtonClicked();
+
+  // also request a list of possible activities to book time against
+  // this is only requested once during the applications' lifetime
+  m_dataLoader->loadTimeEntryActivities();
+
   m_isInitializeDone = true;
 }
 

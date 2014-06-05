@@ -29,14 +29,22 @@
 #include "data/time_entry.h"
 #include "data/time_entry_loader.h"
 #include "data/utils.h"
+#include "models/time_activities_model.h"
 
 DataLoader::DataLoader(QObject* parent) : QObject(parent) {
   m_issuesManager = new QNetworkAccessManager(this);
   connect(m_issuesManager, SIGNAL(finished(QNetworkReply*)), this,
           SLOT(onIssuesManagerReply(QNetworkReply*)));
+
+  m_timeActivityManager = new QNetworkAccessManager(this);
+  connect(m_timeActivityManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(onTimeActivityManagerReply(QNetworkReply*)));
+
+  m_timeActivitiesModel = new TimeActivitiesModel();
 }
 
-DataLoader::~DataLoader() {}
+DataLoader::~DataLoader() {
+  delete m_timeActivitiesModel;
+}
 
 void DataLoader::loadData() {
   qDebug() << "DataLoader::loadData()";
@@ -46,6 +54,14 @@ void DataLoader::loadData() {
 
   // Start the load process.
   startLoadIssues();
+}
+
+void DataLoader::loadTimeEntryActivities() {
+  qDebug() << "Requesting Time Entry Activity information";
+
+  QNetworkRequest request(buildTimeEntryActivitiesURL());
+  qDebug() << "Url: " << request.url();
+  m_timeActivityManager->get(request);
 }
 
 void DataLoader::swapIssues(QVector<Issue>* issues) { issues->swap(m_issues); }
@@ -95,6 +111,25 @@ void DataLoader::onIssuesManagerReply(QNetworkReply* reply) {
     if (m_issues.size() != issuesBefore && totalCount >= 0 &&
         m_issues.size() < totalCount) {
       startLoadIssues(offset + limit);
+    }
+  }
+}
+
+void DataLoader::onTimeActivityManagerReply(QNetworkReply* reply) {
+  qDebug() << "Time Entry Activities data received.";
+
+  QByteArray data(reply->read(reply->bytesAvailable()));
+
+  QDomDocument document;
+  document.setContent(data);
+
+  QDomElement root(document.firstChildElement());
+
+  if (root.tagName() == "time_entry_activities") {
+    for (QDomElement timeEntryActivityElem = root.firstChildElement("time_entry_activity");
+      !timeEntryActivityElem.isNull();
+      timeEntryActivityElem = timeEntryActivityElem.nextSiblingElement("time_entry_activity")) {
+      m_timeActivitiesModel->updateFromXml(timeEntryActivityElem);
     }
   }
 }
@@ -150,6 +185,27 @@ QString DataLoader::buildIssuesUrl(int offset) {
     // Only show our own issues.
     url.append("&assigned_to_id=me");
   }
+
+  return url;
+}
+
+QString DataLoader::buildTimeEntryActivitiesURL() {
+  QSettings settings;
+
+  // if the user specified the protocol as part of the url remove the protocol
+  QString userUrl = settings.value("serverUrl").toString();
+  if (settings.value("serverUrl").toString().startsWith("http://"))
+    userUrl = settings.value("serverUrl").toString().split("//")[1];
+  else
+    userUrl = settings.value("serverUrl").toString();
+
+  QString url(
+    "http://%1/enumerations/time_entry_activities.xml?"
+    "key=%2");
+  url = url.arg(userUrl)
+    .arg(settings.value("apiKey").toString());
+
+  qDebug() << url;
 
   return url;
 }
