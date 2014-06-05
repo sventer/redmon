@@ -44,13 +44,13 @@
 #include "models/issues_table_model.h"
 #include "models/issue_table_item_delegate.h"
 #include "views/issues_table_view.h"
-#include "dialogs/time_commit_dialog.h"
+#include "dialogs/issue_activity_dialog.h"
 
 MainWindow::MainWindow(QWidget* parent)
   : QWidget(parent), m_isTrackingTime(false), m_isInitializeDone(false) {
 
-  m_timeCommitDialog = new TimeCommitDialog();
-  m_timeCommitDialog->hide();
+  m_issueActivityDialog = new IssueActivityDialog();
+  m_issueActivityDialog->hide();
 
   // Position the window to the last place we stored it at.
   QPoint mainWindowPos(Config::Get().mainWindowPos());
@@ -62,7 +62,7 @@ MainWindow::MainWindow(QWidget* parent)
   m_dataLoader = new DataLoader(this);
   connect(m_dataLoader, SIGNAL(finished()), this, SLOT(onDataLoaderFinished()));
 
-  m_dataLoader->registerDialogs(m_timeCommitDialog);
+  m_dataLoader->registerDialogs(m_issueActivityDialog);
 
   // Create controls.
 
@@ -201,7 +201,7 @@ void MainWindow::onStopButtonClicked() {
   //if (!m_isTrackingTime)
     //return;
 
-  m_timeCommitDialog->show();
+  m_issueActivityDialog->show();
 
   // Swap the buttons out.
   m_startButton->show();

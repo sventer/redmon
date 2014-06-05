@@ -19,7 +19,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "dialogs/time_commit_dialog.h"
+#include "dialogs/issue_activity_dialog.h"
 
 #include <QLabel>
 #include <QLineEdit>
@@ -30,9 +30,11 @@
 #include <QFormLayout>
 #include <QDebug>
 
-TimeCommitDialog::TimeCommitDialog() {
+IssueActivityDialog::IssueActivityDialog() {
   // this dialog is model
   setModal(true);
+
+  setWindowTitle("Issue Activity Dialog");
 
   //setFixedSize(250, 190);
 
@@ -74,7 +76,6 @@ TimeCommitDialog::TimeCommitDialog() {
   buttonLayout->addWidget(m_cancelTimeButton);
 
   QFormLayout* activityLayout = new QFormLayout;
-  //QVBoxLayout* activityLayout = new QVBoxLayout;
   activityLayout->addRow(issueNumberLayout);
   activityLayout->addRow(issueDescriptionLayout);
   activityLayout->addRow(timeSpentLayout);
@@ -84,10 +85,10 @@ TimeCommitDialog::TimeCommitDialog() {
   setLayout(activityLayout);
 }
 
-TimeCommitDialog::~TimeCommitDialog() {
+IssueActivityDialog::~IssueActivityDialog() {
 }
 
-void TimeCommitDialog::updateActivities(const QMap<int, QString>& activities) {
+void IssueActivityDialog::updateActivities(const QMap<int, QString>& activities) {
   for (QMap<int, QString>::const_iterator bi(activities.begin()), ei(activities.end()); bi != ei; ++bi) {
     QString tmp = bi.value();
     qDebug() << "#$#$#$#$#$#$#$#$#$ " << tmp;

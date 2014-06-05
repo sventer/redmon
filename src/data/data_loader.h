@@ -34,7 +34,7 @@ struct Issue;
 struct TimeEntry;
 class TimeEntryLoader;
 class TimeActivitiesModel;
-class TimeCommitDialog;
+class IssueActivityDialog;
 
 class DataLoader : public QObject {
   Q_OBJECT
@@ -50,7 +50,7 @@ public:
   // Swap the issues into the specified list.
   void swapIssues(QVector<Issue>* issues);
 
-  void registerDialogs(TimeCommitDialog* dialog);
+  void registerDialogs(IssueActivityDialog* dialog);
 
 signals:
   void finished();
@@ -75,7 +75,7 @@ private:
   TimeEntryLoadersType m_timeEntryLoaders;
 
   TimeActivitiesModel* m_timeActivitiesModel;
-  TimeCommitDialog* m_dialog;
+  IssueActivityDialog* m_dialog;
 };
 
 #endif  // DATA_DATA_LOADER_H_

@@ -29,12 +29,12 @@ class QComboBox;
 class QLineEdit;
 class QPushButton;
 
-class TimeCommitDialog : public QDialog {
+class IssueActivityDialog : public QDialog {
   Q_OBJECT
 
 public:
-  TimeCommitDialog();
-  virtual ~TimeCommitDialog();
+  IssueActivityDialog();
+  virtual ~IssueActivityDialog();
 
   void updateActivities(const QMap<int, QString>& activities);
 
