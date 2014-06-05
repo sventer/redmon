@@ -28,6 +28,7 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QFormLayout>
+#include <QDebug>
 
 TimeCommitDialog::TimeCommitDialog() {
   // this dialog is model
@@ -84,4 +85,13 @@ TimeCommitDialog::TimeCommitDialog() {
 }
 
 TimeCommitDialog::~TimeCommitDialog() {
+}
+
+void TimeCommitDialog::updateActivities(const QMap<int, QString>& activities) {
+  for (QMap<int, QString>::const_iterator bi(activities.begin()), ei(activities.end()); bi != ei; ++bi) {
+    QString tmp = bi.value();
+    qDebug() << "#$#$#$#$#$#$#$#$#$ " << tmp;
+    Q_ASSERT(m_timeActivity);
+    m_timeActivity->addItem(tmp);
+  }
 }

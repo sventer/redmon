@@ -41,6 +41,8 @@ public:
   QString findActivity(int index) const;
   int activityCount() const;
 
+  QMap<int, QString> getActivities() const { return m_timeActivities; }
+
 private:
   QMap<int, QString> m_timeActivities;
 

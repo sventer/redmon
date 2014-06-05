@@ -30,6 +30,7 @@
 #include "data/time_entry_loader.h"
 #include "data/utils.h"
 #include "models/time_activities_model.h"
+#include "dialogs/time_commit_dialog.h"
 
 DataLoader::DataLoader(QObject* parent) : QObject(parent) {
   m_issuesManager = new QNetworkAccessManager(this);
@@ -65,6 +66,11 @@ void DataLoader::loadTimeEntryActivities() {
 }
 
 void DataLoader::swapIssues(QVector<Issue>* issues) { issues->swap(m_issues); }
+
+void DataLoader::registerDialogs(TimeCommitDialog* dialog) {
+  Q_ASSERT(dialog);
+  m_dialog = dialog;
+}
 
 void DataLoader::onIssuesManagerReply(QNetworkReply* reply) {
   qDebug() << "DataLoader::onIssuesManagerReply";
@@ -131,6 +137,11 @@ void DataLoader::onTimeActivityManagerReply(QNetworkReply* reply) {
       timeEntryActivityElem = timeEntryActivityElem.nextSiblingElement("time_entry_activity")) {
       m_timeActivitiesModel->updateFromXml(timeEntryActivityElem);
     }
+  }
+
+  if (m_timeActivitiesModel->activityCount() > 0) {
+    TimeCommitDialog* dialog = static_cast<TimeCommitDialog*>(m_dialog);
+    dialog->updateActivities(m_timeActivitiesModel->getActivities());
   }
 }
 

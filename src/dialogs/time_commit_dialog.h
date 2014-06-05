@@ -36,6 +36,8 @@ public:
   TimeCommitDialog();
   virtual ~TimeCommitDialog();
 
+  void updateActivities(const QMap<int, QString>& activities);
+
 private:
   QLabel* m_issueNumber;
   QLabel* m_issueDescription;

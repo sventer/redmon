@@ -62,6 +62,8 @@ MainWindow::MainWindow(QWidget* parent)
   m_dataLoader = new DataLoader(this);
   connect(m_dataLoader, SIGNAL(finished()), this, SLOT(onDataLoaderFinished()));
 
+  m_dataLoader->registerDialogs(m_timeCommitDialog);
+
   // Create controls.
 
   m_settingsButton = new QPushButton("Settings");
