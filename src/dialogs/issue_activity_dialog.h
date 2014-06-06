@@ -24,6 +24,7 @@
 
 #include <QDialog>
 #include "data/activities_data_loader.h"
+#include "data/issue.h"
 
 class QLabel;
 class QComboBox;
@@ -39,8 +40,11 @@ public:
   IssueActivityDialog();
   virtual ~IssueActivityDialog();
 
+  void updateDetails(const Issue& issue);
+
 public slots:
   void onActivitiesLoaded(IssueActivityType* activitiesList);
+  void onUpdateIssueDestails(const Issue& issue);
   
 private:
   QLabel* m_issueNumber;

@@ -195,6 +195,11 @@ void MainWindow::onStopButtonClicked() {
   //if (!m_isTrackingTime)
     //return;
 
+  Issue issue;
+  m_tableIssuesModel->getIssue(m_issuesTable->selectedRow(), &issue);
+
+  //m_tableIssuesModel->getIssue(0, &issue);
+  m_issueActivityDialog->updateDetails(issue);
   m_issueActivityDialog->show();
 
   // Swap the buttons out.

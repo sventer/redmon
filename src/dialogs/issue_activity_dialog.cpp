@@ -38,17 +38,18 @@ IssueActivityDialog::IssueActivityDialog() {
 
   setWindowTitle("Issue Activity Dialog");
 
-  //setFixedSize(250, 190);
+  // setFixedSize(250, 190);
 
   QHBoxLayout* issueNumberLayout = new QHBoxLayout;
   QLabel* issueNumberLabel = new QLabel("Issue Number: ");
-  m_issueNumber = new QLabel("2983", this);
+  m_issueNumber = new QLabel("", this);
   issueNumberLayout->addWidget(issueNumberLabel);
   issueNumberLayout->addWidget(m_issueNumber);
 
   QVBoxLayout* issueDescriptionLayout = new QVBoxLayout;
   QLabel* issueDescriptionLabel = new QLabel("Issue Description:");
-  m_issueDescription = new QLabel("This is the issues description and cannot be edited.");
+  m_issueDescription =
+      new QLabel("This is the issues description and cannot be edited.");
   issueDescriptionLayout->addWidget(issueDescriptionLabel);
   issueDescriptionLayout->addWidget(m_issueDescription);
 
@@ -85,20 +86,32 @@ IssueActivityDialog::IssueActivityDialog() {
   activityLayout->addRow(activityNotes);
   activityLayout->addRow(buttonLayout);
   setLayout(activityLayout);
-  
+
   m_activitiesDataLoader = new ActivitiesDataLoader();
-  connect(m_activitiesDataLoader, SIGNAL(activitiesLoaded(IssueActivityType*)), this, SLOT(onActivitiesLoaded(IssueActivityType*)));
+  connect(m_activitiesDataLoader, SIGNAL(activitiesLoaded(IssueActivityType*)),
+          this, SLOT(onActivitiesLoaded(IssueActivityType*)));
   m_activitiesDataLoader->loadData();
 }
 
-IssueActivityDialog::~IssueActivityDialog() {
+IssueActivityDialog::~IssueActivityDialog() {}
+
+void IssueActivityDialog::updateDetails(const Issue& issue) {
+  onUpdateIssueDestails(issue);
 }
 
-void IssueActivityDialog::onActivitiesLoaded(IssueActivityType* activitiesList) {
+void IssueActivityDialog::onActivitiesLoaded(
+    IssueActivityType* activitiesList) {
   qDebug() << "IssueActivityDialog::onActivitiesLoaded";
 
-  for (IssueActivityType::iterator bi(activitiesList->begin()), ei(activitiesList->end()); bi != ei; ++bi) {
+  for (IssueActivityType::iterator bi(activitiesList->begin()),
+       ei(activitiesList->end());
+       bi != ei; ++bi) {
     QString activity = bi.value();
     m_timeActivity->addItem(activity);
   }
+}
+
+void IssueActivityDialog::onUpdateIssueDestails(const Issue& issue) {
+  m_issueNumber->setText(QString::number(issue.id));
+  m_issueDescription->setText(issue.subject);
 }

@@ -39,6 +39,7 @@ class QTableView;
 class DataLoader;
 class IssuesTableModel;
 class IssueActivityDialog;
+class IssuesTableView;
 
 class MainWindow : public QWidget {
   Q_OBJECT
@@ -81,8 +82,8 @@ private:
   QPushButton* m_startButton;
   QPushButton* m_stopButton;
 
-  QListView* m_issuesList;
-  QTableView* m_issuesTable;
+  //QListView* m_issuesList;
+  IssuesTableView* m_issuesTable;
   IssuesTableModel* m_tableIssuesModel;
 
   // The worker object we use to load our issues from the server.

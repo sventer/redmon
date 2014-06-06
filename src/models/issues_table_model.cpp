@@ -27,7 +27,7 @@
 #include "data/data.h"
 
 IssuesTableModel::IssuesTableModel(QObject* parent)
-  : QAbstractTableModel(parent), _selectedRow(0) {
+  : QAbstractTableModel(parent) {
   if (Data::Get().issues.count() >= 1) {
     for (int idx = 0; idx < Data::Get().issues.count(); ++idx) {
       _issues.push_back(Data::Get().issues.at(idx));
@@ -113,6 +113,12 @@ bool IssuesTableModel::insertIssue(const Issue& issue) {
   }
 
   return false;
+}
+
+bool IssuesTableModel::getIssue(int row, Issue* issue) {
+  if (row <= _issues.size())
+    *issue = _issues.at(row);
+  return true;
 }
 
 bool IssuesTableModel::containsIssue(int issueId) {

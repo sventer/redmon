@@ -38,6 +38,8 @@ class IssuesTableView : public QTableView {
 public:
   IssuesTableView(QWidget* parent = 0);
 
+  int selectedRow() const { return m_selectedRow; }
+
 public slots:
   virtual void currentChanged(const QModelIndex& current, const QModelIndex& previous) override;
   void setInitialSelection();

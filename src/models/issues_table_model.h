@@ -28,7 +28,7 @@
 #include "data/issue.h"
 
 class IssuesTableModel : public QAbstractTableModel {
-	Q_OBJECT
+  Q_OBJECT
 
 public:
 	explicit IssuesTableModel(QObject* parent = 0);
@@ -44,13 +44,15 @@ public:
   // instead of using one of the insertRow(s) functions we provide our own insertion function
   bool insertIssue(const Issue& issue);
 
+  // get the issue at location (row)
+  bool getIssue(int row, Issue* issue);
+
 private:
   bool containsIssue(int issueId);
-  int _selectedRow;
 
   QVector<Issue> _issues;
 
-	Q_DISABLE_COPY(IssuesTableModel)
+  Q_DISABLE_COPY(IssuesTableModel)
 };
 
 #endif  // ISSUES_TABLE_MODEL
