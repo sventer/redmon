@@ -37,7 +37,7 @@ class IssueActivityDialog : public QDialog {
   Q_OBJECT
 
 public:
-  IssueActivityDialog();
+  IssueActivityDialog(QWidget* parent = 0);
   virtual ~IssueActivityDialog();
 
   void updateDetails(const Issue& issue);

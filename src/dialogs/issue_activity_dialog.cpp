@@ -32,7 +32,7 @@
 
 #include "data/activities_data_loader.h"
 
-IssueActivityDialog::IssueActivityDialog() {
+IssueActivityDialog::IssueActivityDialog(QWidget* parent) : QDialog(parent, Qt::CustomizeWindowHint | Qt::WindowTitleHint) {
   // this dialog is model
   setModal(true);
 
@@ -77,6 +77,8 @@ IssueActivityDialog::IssueActivityDialog() {
   m_cancelTimeButton = new QPushButton("Cancel");
   buttonLayout->addWidget(m_commitTimeButton);
   buttonLayout->addWidget(m_cancelTimeButton);
+
+  connect(m_cancelTimeButton, SIGNAL(clicked()), this, SLOT(hide()));
 
   QFormLayout* activityLayout = new QFormLayout;
   activityLayout->addRow(issueNumberLayout);
