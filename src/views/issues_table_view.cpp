@@ -27,8 +27,8 @@
 
 IssuesTableView::IssuesTableView(QWidget* parent)
 : QTableView(parent), m_selectedRow(-1), m_selectedIssueId(0) {
-  setSelectionMode(SelectionMode::SingleSelection);
-  setSelectionBehavior(SelectionBehavior::SelectRows);
+  setSelectionMode(SingleSelection);
+  setSelectionBehavior(SelectRows);
 }
 
 void IssuesTableView::currentChanged(const QModelIndex& current, const QModelIndex& previous) {
@@ -54,7 +54,7 @@ void IssuesTableView::setInitialSelection() {
 // we store the issue id so that when the tabelis recreated we can highlight the correct issue again
 // the row indication may cahnage depending on if additional issues were added or deleted.
 void IssuesTableView::storeCurrentSelection() {
-  QModelIndex currentIndex(currentIndex());
+  QModelIndex currentIndex(QTableView::currentIndex());
   IssuesTableModel* tableModel = static_cast<IssuesTableModel*>(model());
   Issue issue = tableModel->issue(currentIndex);
   m_selectedIssueId = issue.id;
