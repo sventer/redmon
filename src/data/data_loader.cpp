@@ -36,15 +36,9 @@ DataLoader::DataLoader(QObject* parent) : QObject(parent) {
   m_issuesManager = new QNetworkAccessManager(this);
   connect(m_issuesManager, SIGNAL(finished(QNetworkReply*)), this,
           SLOT(onIssuesManagerReply(QNetworkReply*)));
-
-  m_timeActivityManager = new QNetworkAccessManager(this);
-  connect(m_timeActivityManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(onTimeActivityManagerReply(QNetworkReply*)));
-
-  m_timeActivitiesModel = new TimeActivitiesModel();
 }
 
 DataLoader::~DataLoader() {
-  delete m_timeActivitiesModel;
 }
 
 void DataLoader::loadData() {
@@ -57,20 +51,7 @@ void DataLoader::loadData() {
   startLoadIssues();
 }
 
-void DataLoader::loadTimeEntryActivities() {
-  qDebug() << "Requesting Time Entry Activity information";
-
-  QNetworkRequest request(buildTimeEntryActivitiesURL());
-  qDebug() << "Url: " << request.url();
-  m_timeActivityManager->get(request);
-}
-
 void DataLoader::swapIssues(QVector<Issue>* issues) { issues->swap(m_issues); }
-
-void DataLoader::registerDialogs(IssueActivityDialog* dialog) {
-  Q_ASSERT(dialog);
-  m_dialog = dialog;
-}
 
 void DataLoader::onIssuesManagerReply(QNetworkReply* reply) {
   qDebug() << "DataLoader::onIssuesManagerReply";
@@ -118,29 +99,6 @@ void DataLoader::onIssuesManagerReply(QNetworkReply* reply) {
         m_issues.size() < totalCount) {
       startLoadIssues(offset + limit);
     }
-  }
-}
-
-void DataLoader::onTimeActivityManagerReply(QNetworkReply* reply) {
-  qDebug() << "Time Entry Activities data received.";
-
-  QByteArray data(reply->read(reply->bytesAvailable()));
-
-  QDomDocument document;
-  document.setContent(data);
-
-  QDomElement root(document.firstChildElement());
-
-  if (root.tagName() == "time_entry_activities") {
-    for (QDomElement timeEntryActivityElem = root.firstChildElement("time_entry_activity");
-      !timeEntryActivityElem.isNull();
-      timeEntryActivityElem = timeEntryActivityElem.nextSiblingElement("time_entry_activity")) {
-      m_timeActivitiesModel->updateFromXml(timeEntryActivityElem);
-    }
-  }
-
-  if (m_timeActivitiesModel->activityCount() > 0) {
-    m_dialog->updateActivities(m_timeActivitiesModel->getActivities());
   }
 }
 

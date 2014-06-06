@@ -45,12 +45,9 @@ public:
 
   // Start the process of loading the data from the server.
   void loadData();
-  void loadTimeEntryActivities();
 
   // Swap the issues into the specified list.
   void swapIssues(QVector<Issue>* issues);
-
-  void registerDialogs(IssueActivityDialog* dialog);
 
 signals:
   void finished();
@@ -59,7 +56,6 @@ signals:
 private slots:
   void onIssuesManagerReply(QNetworkReply* reply);
   void onTimeEntryLoaderFinished(TimeEntryLoader* loader);
-  void onTimeActivityManagerReply(QNetworkReply* reply);
 
 private:
   void startLoadIssues(int offset = 0);

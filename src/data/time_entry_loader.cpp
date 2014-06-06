@@ -40,7 +40,7 @@ TimeEntryLoader::~TimeEntryLoader() {}
 void TimeEntryLoader::load() { startLoadingTimeEntries(); }
 
 void TimeEntryLoader::onNetworkReply(QNetworkReply* reply) {
-  qDebug() << "TimeEntryLoader::onNetworkReply |" << m_issue.projectId;
+  //qDebug() << "TimeEntryLoader::onNetworkReply |" << m_issue.projectId;
 
   QByteArray data(reply->read(reply->bytesAvailable()));
 

@@ -30,6 +30,8 @@
 #include <QFormLayout>
 #include <QDebug>
 
+#include "data/activities_data_loader.h"
+
 IssueActivityDialog::IssueActivityDialog() {
   // this dialog is model
   setModal(true);
@@ -83,16 +85,20 @@ IssueActivityDialog::IssueActivityDialog() {
   activityLayout->addRow(activityNotes);
   activityLayout->addRow(buttonLayout);
   setLayout(activityLayout);
+  
+  m_activitiesDataLoader = new ActivitiesDataLoader();
+  connect(m_activitiesDataLoader, SIGNAL(activitiesLoaded(IssueActivityType*)), this, SLOT(onActivitiesLoaded(IssueActivityType*)));
+  m_activitiesDataLoader->loadData();
 }
 
 IssueActivityDialog::~IssueActivityDialog() {
 }
 
-void IssueActivityDialog::updateActivities(const QMap<int, QString>& activities) {
-  for (QMap<int, QString>::const_iterator bi(activities.begin()), ei(activities.end()); bi != ei; ++bi) {
-    QString tmp = bi.value();
-    qDebug() << "#$#$#$#$#$#$#$#$#$ " << tmp;
-    Q_ASSERT(m_timeActivity);
-    m_timeActivity->addItem(tmp);
+void IssueActivityDialog::onActivitiesLoaded(IssueActivityType* activitiesList) {
+  qDebug() << "IssueActivityDialog::onActivitiesLoaded";
+
+  for (IssueActivityType::iterator bi(activitiesList->begin()), ei(activitiesList->end()); bi != ei; ++bi) {
+    QString activity = bi.value();
+    m_timeActivity->addItem(activity);
   }
 }

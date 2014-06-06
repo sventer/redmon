@@ -62,8 +62,6 @@ MainWindow::MainWindow(QWidget* parent)
   m_dataLoader = new DataLoader(this);
   connect(m_dataLoader, SIGNAL(finished()), this, SLOT(onDataLoaderFinished()));
 
-  m_dataLoader->registerDialogs(m_issueActivityDialog);
-
   // Create controls.
 
   m_settingsButton = new QPushButton("Settings");
@@ -128,10 +126,6 @@ void MainWindow::showEvent(QShowEvent* event) {
 
   // request an initial issue update
   onUpdateButtonClicked();
-
-  // also request a list of possible activities to book time against
-  // this is only requested once during the applications' lifetime
-  m_dataLoader->loadTimeEntryActivities();
 
   m_isInitializeDone = true;
 }

@@ -58,7 +58,7 @@ QVariant IssuesTableModel::data(const QModelIndex& index, int role) const {
 
 	const Issue& issue = _issues.at(index.row());
 
-	qDebug() << "table column number [" << QString::number(index.column()) << "]";
+	//qDebug() << "table column number [" << QString::number(index.column()) << "]";
 
 	switch (index.column()) {
 	case 0:

@@ -28,8 +28,8 @@
   <element>
     <type>com.umlet.element.Class</type>
     <coordinates>
-      <x>800</x>
-      <y>210</y>
+      <x>170</x>
+      <y>310</y>
       <w>140</w>
       <h>30</h>
     </coordinates>
@@ -39,13 +39,13 @@
   <element>
     <type>com.umlet.element.Relation</type>
     <coordinates>
-      <x>640</x>
-      <y>190</y>
-      <w>180</w>
-      <h>50</h>
+      <x>210</x>
+      <y>210</y>
+      <w>50</w>
+      <h>120</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;&lt;-</panel_attributes>
-    <additional_attributes>30;30;160;30</additional_attributes>
+    <additional_attributes>30;30;30;100</additional_attributes>
   </element>
   <element>
     <type>com.umlet.element.Class</type>
@@ -115,7 +115,7 @@ m2=1
       <w>190</w>
       <h>30</h>
     </coordinates>
-    <panel_attributes>IssuesActivityLoader</panel_attributes>
+    <panel_attributes>ActivityDataLoader</panel_attributes>
     <additional_attributes/>
   </element>
   <element>

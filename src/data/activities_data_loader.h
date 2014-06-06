@@ -19,39 +19,38 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef TIME_COMMIT_DIALOG
-#define TIME_COMMIT_DIALOG
+#ifndef ACTIVITIES_DATA_LOADER
+#define ACTIVITIES_DATA_LOADER
 
-#include <QDialog>
-#include "data/activities_data_loader.h"
+#include <QMap>
+#include <QNetworkAccessManager>
 
-class QLabel;
-class QComboBox;
-class QLineEdit;
-class QPushButton;
+class QNetworkReply;
 
-class ActivitiesDataLoader;
+typedef QMap<int, QString> IssueActivityType;
+Q_DECLARE_METATYPE(IssueActivityType)
 
-class IssueActivityDialog : public QDialog {
+class ActivitiesDataLoader : public QObject {
   Q_OBJECT
-
+  
 public:
-  IssueActivityDialog();
-  virtual ~IssueActivityDialog();
+  ActivitiesDataLoader(QObject* parent = 0);
+  virtual ~ActivitiesDataLoader();
+  
+  void loadData();
 
-public slots:
-  void onActivitiesLoaded(IssueActivityType* activitiesList);
+signals:
+  void activitiesLoaded(IssueActivityType* activities);
   
+private slots:
+  void onActivitiesManagerReply(QNetworkReply* reply);
+
 private:
-  QLabel* m_issueNumber;
-  QLabel* m_issueDescription;
-  QLabel* m_timeSpent;
-  QComboBox* m_timeActivity;
-  QLineEdit* m_activityNote;
-  QPushButton* m_commitTimeButton;
-  QPushButton* m_cancelTimeButton;
+  QString buildActivityRequestUrl() const;
   
-  ActivitiesDataLoader* m_activitiesDataLoader;
+  QNetworkAccessManager* m_activitiesManager;
+  
+  QMap<int, QString> m_activities;
 };
 
-#endif  // TIME_COMMIT_DIALOG
+#endif  // ACTIVITIES_DATA_LOADER
