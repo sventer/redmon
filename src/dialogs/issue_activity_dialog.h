@@ -23,6 +23,7 @@
 #define TIME_COMMIT_DIALOG
 
 #include <QDialog>
+#include <QTime>
 #include "data/activities_data_loader.h"
 #include "data/issue.h"
 
@@ -41,10 +42,12 @@ public:
   virtual ~IssueActivityDialog();
 
   void updateDetails(const Issue& issue);
+  void updateTimeSpent(const QString& time);
 
 public slots:
   void onActivitiesLoaded(IssueActivityType* activitiesList);
   void onUpdateIssueDestails(const Issue& issue);
+  void onCommitTimeSpent();
   
 private:
   QLabel* m_issueNumber;

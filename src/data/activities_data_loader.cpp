@@ -69,11 +69,9 @@ void ActivitiesDataLoader::onActivitiesManagerReply(QNetworkReply* reply) {
       // only insert this entry if value is not empty
       if (!value.isEmpty())
         m_activities.insert(key, value);
-        qDebug() << "Activity key: [" << QString::number(key) << "] value: [" << value << "]";
     }
   }
   
-  qDebug() << "Number of activities received [" << QString::number(m_activities.size()) << "]";
   emit activitiesLoaded(&m_activities);
 }
 

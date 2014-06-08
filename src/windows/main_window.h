@@ -23,6 +23,7 @@
 #define WINDOWS_MAIN_WINDOW_H_
 
 #include <QWidget>
+#include <QDateTime>
 
 #include "data/issue.h"
 
@@ -82,7 +83,7 @@ private:
   QPushButton* m_startButton;
   QPushButton* m_stopButton;
 
-  //QListView* m_issuesList;
+  // QListView* m_issuesList;
   IssuesTableView* m_issuesTable;
   IssuesTableModel* m_tableIssuesModel;
 
@@ -99,6 +100,9 @@ private:
   bool m_isInitializeDone;
 
   IssueActivityDialog* m_issueActivityDialog;
+
+  QDateTime m_startTime;
+  QDateTime m_stopTime;
 
   Q_DISABLE_COPY(MainWindow)
 };

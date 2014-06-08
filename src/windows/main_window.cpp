@@ -22,6 +22,7 @@
 #include "windows/main_window.h"
 
 #include <QBoxLayout>
+#include <QDateTime>
 #include <QDebug>
 #include <QListView>
 #include <QMoveEvent>
@@ -48,7 +49,6 @@
 
 MainWindow::MainWindow(QWidget* parent)
   : QWidget(parent), m_isTrackingTime(false), m_isInitializeDone(false) {
-
   m_issueActivityDialog = new IssueActivityDialog();
   m_issueActivityDialog->hide();
 
@@ -83,11 +83,14 @@ MainWindow::MainWindow(QWidget* parent)
   m_tableIssuesModel = new IssuesTableModel;
   m_issuesTable->setFrameShape(QFrame::NoFrame);
   m_issuesTable->setItemDelegate(new IssueTableItemDelegate);
-  m_issuesTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+  m_issuesTable->horizontalHeader()->setSectionResizeMode(
+      QHeaderView::ResizeToContents);
   m_issuesTable->verticalHeader()->hide();
   m_issuesTable->setModel(m_tableIssuesModel);
-  connect(m_issuesTable, SIGNAL(clicked(QModelIndex)), this, SLOT(onSelectIssue(QModelIndex)));
-  connect(this, SIGNAL(onDataLoaded()), m_issuesTable, SLOT(setInitialSelection()));
+  connect(m_issuesTable, SIGNAL(clicked(QModelIndex)), this,
+          SLOT(onSelectIssue(QModelIndex)));
+  connect(this, SIGNAL(onDataLoaded()), m_issuesTable,
+          SLOT(setInitialSelection()));
 
   // Set up the layouts.
   QHBoxLayout* buttonsLayout = new QHBoxLayout;
@@ -112,7 +115,8 @@ MainWindow::MainWindow(QWidget* parent)
   startTimer();
 }
 
-MainWindow::~MainWindow() {}
+MainWindow::~MainWindow() {
+}
 
 void MainWindow::showEvent(QShowEvent* event) {
   QWidget::showEvent(event);
@@ -171,35 +175,46 @@ void MainWindow::onStartButtonClicked() {
   // If we are already tracking time, don't do anything.
   if (m_isTrackingTime)
     return;
-#if 0
+
   // If there is nothing selected in the issue list, don't do anything.
-  QItemSelectionModel* selection = m_issuesList->selectionModel();
-  if (!selection || !selection->hasSelection())
+  if (m_issuesTable->selectedRow() < 0)
     return;
-#endif  // 0
+
   // Swap the buttons out.
   m_startButton->hide();
   m_stopButton->show();
-#if 0
+
   // Get the issue.
-  IssuesModel* model = static_cast<IssuesModel*>(m_issuesList->model());
-  const Issue& issue = model->issue(selection->currentIndex());
+  Issue issue;
+  m_tableIssuesModel->getIssue(m_issuesTable->selectedRow(), &issue);
 
   // Start.
   startTrackingTime(issue.id);
-#endif  // 0
 }
 
 void MainWindow::onStopButtonClicked() {
   // If we are not tracking time, don't do anything.
-  //if (!m_isTrackingTime)
-    //return;
+  if (!m_isTrackingTime)
+    return;
 
   Issue issue;
   m_tableIssuesModel->getIssue(m_issuesTable->selectedRow(), &issue);
 
-  //m_tableIssuesModel->getIssue(0, &issue);
+  stopTrackingTime();
+
+  // m_tableIssuesModel->getIssue(0, &issue);
   m_issueActivityDialog->updateDetails(issue);
+
+  unsigned int elapsedTime = m_stopTime.toTime_t() - m_startTime.toTime_t();
+  unsigned int hour = int(elapsedTime / 3600);
+  unsigned int min = int((elapsedTime % 3600) / 60);
+
+  QString time("%1:%2");
+  time = time.arg(hour, 2, 10, QChar('0')).arg(min, 2, 10, QChar('0'));
+  qDebug() << "time spent on the issue is " << time;
+
+  m_issueActivityDialog->updateTimeSpent(time);
+
   m_issueActivityDialog->show();
 
   // Swap the buttons out.
@@ -222,7 +237,7 @@ void MainWindow::onDataLoaderFinished() {
   if (totalIssues > 0) {
     emit onDataLoaded();
   }
-  
+
   // Set the update button back to an enabled state.
   m_updateButton->setText("Update");
   m_updateButton->setEnabled(true);
@@ -239,8 +254,8 @@ void MainWindow::onIssuesListCurrentChanged(const QModelIndex& current,
 }
 
 void MainWindow::onSelectIssue(const QModelIndex& selection) {
-	qDebug() << selection.row();
-	m_issuesTable->selectRow(selection.row());
+  qDebug() << selection.row();
+  m_issuesTable->selectRow(selection.row());
 }
 
 void MainWindow::startTimer() {
@@ -262,6 +277,16 @@ void MainWindow::stopTimer() {
 
 void MainWindow::startTrackingTime(int issueId) {
   qDebug() << "Tracking time for:" << issueId;
+
+  m_startTime = QDateTime::currentDateTime();
+  
+  m_isTrackingTime = true;
 }
 
-void MainWindow::stopTrackingTime() { qDebug() << "Stop tracking time"; }
+void MainWindow::stopTrackingTime() { 
+  qDebug() << "Stop tracking time"; 
+
+  m_stopTime = QDateTime::currentDateTime();
+
+  m_isTrackingTime = false;
+}

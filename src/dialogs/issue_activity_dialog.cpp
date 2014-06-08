@@ -21,6 +21,8 @@
 
 #include "dialogs/issue_activity_dialog.h"
 
+#include <QDate>
+#include <QDomElement>
 #include <QLabel>
 #include <QLineEdit>
 #include <QComboBox>
@@ -32,7 +34,8 @@
 
 #include "data/activities_data_loader.h"
 
-IssueActivityDialog::IssueActivityDialog(QWidget* parent) : QDialog(parent, Qt::CustomizeWindowHint | Qt::WindowTitleHint) {
+IssueActivityDialog::IssueActivityDialog(QWidget* parent)
+  : QDialog(parent, Qt::CustomizeWindowHint | Qt::WindowTitleHint) {
   // this dialog is model
   setModal(true);
 
@@ -68,7 +71,7 @@ IssueActivityDialog::IssueActivityDialog(QWidget* parent) : QDialog(parent, Qt::
 
   QVBoxLayout* activityNotes = new QVBoxLayout;
   QLabel* activityNoteLabel = new QLabel("Activity Notes:");
-  m_activityNote = new QLineEdit("Notes");
+  m_activityNote = new QLineEdit("");
   activityNotes->addWidget(activityNoteLabel);
   activityNotes->addWidget(m_activityNote);
 
@@ -79,6 +82,7 @@ IssueActivityDialog::IssueActivityDialog(QWidget* parent) : QDialog(parent, Qt::
   buttonLayout->addWidget(m_cancelTimeButton);
 
   connect(m_cancelTimeButton, SIGNAL(clicked()), this, SLOT(hide()));
+  connect(m_commitTimeButton, SIGNAL(clicked()), this, SLOT(onCommitTimeSpent()));
 
   QFormLayout* activityLayout = new QFormLayout;
   activityLayout->addRow(issueNumberLayout);
@@ -101,6 +105,10 @@ void IssueActivityDialog::updateDetails(const Issue& issue) {
   onUpdateIssueDestails(issue);
 }
 
+void IssueActivityDialog::updateTimeSpent(const QString& time) {
+  m_timeSpent->setText(time);
+}
+
 void IssueActivityDialog::onActivitiesLoaded(
     IssueActivityType* activitiesList) {
   qDebug() << "IssueActivityDialog::onActivitiesLoaded";
@@ -116,4 +124,42 @@ void IssueActivityDialog::onActivitiesLoaded(
 void IssueActivityDialog::onUpdateIssueDestails(const Issue& issue) {
   m_issueNumber->setText(QString::number(issue.id));
   m_issueDescription->setText(issue.subject);
+}
+
+void IssueActivityDialog::onCommitTimeSpent() {
+  //<?xml version="1.0"?>
+
+  QDomDocument doc;
+  QDomProcessingInstruction inst = doc.createProcessingInstruction("xml", "version='1.0' encodeing='UTF-8'");
+  doc.appendChild(inst);
+
+  QDomElement root = doc.createElement("time_entry");
+  doc.appendChild(root);
+
+  QDomElement issueTag = doc.createElement("issue_id");
+  root.appendChild(issueTag);
+  QDomText issueText = doc.createTextNode(m_issueNumber->text());
+  issueTag.appendChild(issueText);
+
+  QDomElement dateTag = doc.createElement("spent_on");
+  root.appendChild(dateTag);
+  QDomText dateText = doc.createTextNode(QDate::currentDate().toString());
+  dateTag.appendChild(dateText);
+
+  QDomElement hoursTag = doc.createElement("hours");
+  root.appendChild(hoursTag);
+  QDomText hoursText = doc.createTextNode("00:23");
+  hoursTag.appendChild(hoursText);
+
+  QDomElement activityIdTag = doc.createElement("activity_id");
+  root.appendChild(activityIdTag);
+  QDomText activityIdText = doc.createTextNode(m_timeActivity->currentText());
+  activityIdTag.appendChild(activityIdText);
+
+  QDomElement commentsTag = doc.createElement("comments");
+  root.appendChild(commentsTag);
+  QDomText commentsText = doc.createTextNode(m_activityNote->text());
+  commentsTag.appendChild(commentsText);
+
+  qDebug() << doc.toString();
 }
