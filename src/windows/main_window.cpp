@@ -180,6 +180,9 @@ void MainWindow::onStartButtonClicked() {
   if (m_issuesTable->selectedRow() < 0)
     return;
 
+  m_issuesTable->setSelectionMode(QAbstractItemView::NoSelection);
+  m_issuesTable->setEnabled(false);
+
   // Swap the buttons out.
   m_startButton->hide();
   m_stopButton->show();
@@ -205,14 +208,7 @@ void MainWindow::onStopButtonClicked() {
   // m_tableIssuesModel->getIssue(0, &issue);
   m_issueActivityDialog->updateDetails(issue);
 
-  unsigned int elapsedTime = m_stopTime.toTime_t() - m_startTime.toTime_t();
-  unsigned int hour = int(elapsedTime / 3600);
-  unsigned int min = int((elapsedTime % 3600) / 60);
-
-  QString time("%1:%2");
-  time = time.arg(hour, 2, 10, QChar('0')).arg(min, 2, 10, QChar('0'));
-  qDebug() << "time spent on the issue is " << time;
-
+  float time = m_stopTime.toTime_t() - m_startTime.toTime_t();
   m_issueActivityDialog->updateTimeSpent(time);
 
   m_issueActivityDialog->show();

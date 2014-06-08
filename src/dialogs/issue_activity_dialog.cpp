@@ -105,8 +105,16 @@ void IssueActivityDialog::updateDetails(const Issue& issue) {
   onUpdateIssueDestails(issue);
 }
 
-void IssueActivityDialog::updateTimeSpent(const QString& time) {
-  m_timeSpent->setText(time);
+void IssueActivityDialog::updateTimeSpent(float time) {
+  m_time = time;
+  unsigned int hour = int(time / 3600);
+  unsigned int min = int((int(time) % 3600) / 60);
+
+  QString timeStr("%1:%2");
+  timeStr = timeStr.arg(hour, 2, 10, QChar('0')).arg(min, 2, 10, QChar('0'));
+  qDebug() << "time spent on the issue is " << timeStr;
+
+  m_timeSpent->setText(timeStr);
 }
 
 void IssueActivityDialog::onActivitiesLoaded(
@@ -143,12 +151,15 @@ void IssueActivityDialog::onCommitTimeSpent() {
 
   QDomElement dateTag = doc.createElement("spent_on");
   root.appendChild(dateTag);
-  QDomText dateText = doc.createTextNode(QDate::currentDate().toString());
+  QDate date = QDate::currentDate();
+  QString dateStr("%1-%2-%3");
+  dateStr = dateStr.arg(date.year()).arg(date.month()).arg(date.day());
+  QDomText dateText = doc.createTextNode(dateStr);
   dateTag.appendChild(dateText);
 
   QDomElement hoursTag = doc.createElement("hours");
   root.appendChild(hoursTag);
-  QDomText hoursText = doc.createTextNode("00:23");
+  QDomText hoursText = doc.createTextNode(QString::number(m_time, 'f', 4));
   hoursTag.appendChild(hoursText);
 
   QDomElement activityIdTag = doc.createElement("activity_id");

@@ -42,7 +42,7 @@ public:
   virtual ~IssueActivityDialog();
 
   void updateDetails(const Issue& issue);
-  void updateTimeSpent(const QString& time);
+  void updateTimeSpent(float time);
 
 public slots:
   void onActivitiesLoaded(IssueActivityType* activitiesList);
@@ -59,6 +59,7 @@ private:
   QPushButton* m_cancelTimeButton;
   
   ActivitiesDataLoader* m_activitiesDataLoader;
+  float m_time;
 };
 
 #endif  // TIME_COMMIT_DIALOG
