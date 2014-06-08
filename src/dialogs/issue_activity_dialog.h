@@ -50,6 +50,8 @@ public slots:
   void onCommitTimeSpent();
   
 private:
+  void sendUpdatedDetails(const QDomDocument& xmlDocument);
+
   QLabel* m_issueNumber;
   QLabel* m_issueDescription;
   QLabel* m_timeSpent;

@@ -21,16 +21,19 @@
 
 #include "dialogs/issue_activity_dialog.h"
 
+#include <QComboBox>
 #include <QDate>
 #include <QDomElement>
+#include <QFormLayout>
+#include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
-#include <QComboBox>
+#include <QNetworkRequest>
 #include <QPushButton>
-#include <QHBoxLayout>
 #include <QVBoxLayout>
-#include <QFormLayout>
 #include <QDebug>
+
+#include <QHttpMultiPart>
 
 #include "data/activities_data_loader.h"
 
@@ -135,8 +138,6 @@ void IssueActivityDialog::onUpdateIssueDestails(const Issue& issue) {
 }
 
 void IssueActivityDialog::onCommitTimeSpent() {
-  //<?xml version="1.0"?>
-
   QDomDocument doc;
   QDomProcessingInstruction inst = doc.createProcessingInstruction("xml", "version='1.0' encodeing='UTF-8'");
   doc.appendChild(inst);
@@ -173,4 +174,14 @@ void IssueActivityDialog::onCommitTimeSpent() {
   commentsTag.appendChild(commentsText);
 
   qDebug() << doc.toString();
+
+  hide();
+
+  sendUpdatedDetails(doc);
+}
+
+void IssueActivityDialog::sendUpdatedDetails(const QDomDocument& xmlDocument) {
+  //QHttpMultiPart *multiPart = new QHttpMultiPart(ContentType::  QHttpMultiPart::FormDataType);
+
+  //QNetworkRequest req()
 }

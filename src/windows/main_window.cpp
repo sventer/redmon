@@ -180,7 +180,6 @@ void MainWindow::onStartButtonClicked() {
   if (m_issuesTable->selectedRow() < 0)
     return;
 
-  m_issuesTable->setSelectionMode(QAbstractItemView::NoSelection);
   m_issuesTable->setEnabled(false);
 
   // Swap the buttons out.
@@ -216,6 +215,8 @@ void MainWindow::onStopButtonClicked() {
   // Swap the buttons out.
   m_startButton->show();
   m_stopButton->hide();
+
+  m_issuesTable->setEnabled(true);
 }
 
 void MainWindow::onDataLoaderFinished() {
