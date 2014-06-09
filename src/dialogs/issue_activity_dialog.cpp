@@ -32,8 +32,9 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QDebug>
-
-#include <QHttpMultiPart>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QSettings>
 
 #include "data/activities_data_loader.h"
 
@@ -100,6 +101,9 @@ IssueActivityDialog::IssueActivityDialog(QWidget* parent)
   connect(m_activitiesDataLoader, SIGNAL(activitiesLoaded(IssueActivityType*)),
           this, SLOT(onActivitiesLoaded(IssueActivityType*)));
   m_activitiesDataLoader->loadData();
+
+  m_netMgr = new QNetworkAccessManager(this);
+  connect(m_netMgr, SIGNAL(finished(QNetworkReply*)), this, SLOT(replyFinished(QNetworkReply*)));
 }
 
 IssueActivityDialog::~IssueActivityDialog() {}
@@ -181,7 +185,39 @@ void IssueActivityDialog::onCommitTimeSpent() {
 }
 
 void IssueActivityDialog::sendUpdatedDetails(const QDomDocument& xmlDocument) {
-  //QHttpMultiPart *multiPart = new QHttpMultiPart(ContentType::  QHttpMultiPart::FormDataType);
+  QNetworkAccessManager netMgr(this);
 
-  //QNetworkRequest req()
+  QNetworkRequest req(buildServerUrl());
+  QVariant contentType("Content-Type: application/xml");
+  req.setHeader(QNetworkRequest::ContentTypeHeader, contentType);
+
+  qDebug() << xmlDocument.toString();
+
+  netMgr.post(req, xmlDocument.toString().toLatin1());
+}
+
+QString IssueActivityDialog::buildServerUrl() {
+  QSettings settings;
+
+  QString userUrl;
+  if (settings.value("serverUrl").toString().startsWith("http://"))
+    userUrl = settings.value("serverUrl").toString().split("//").at(1);
+  else
+    userUrl = settings.value("serverUrl").toString();
+
+  QString url(
+      "http://%1/time_entries.xml?"
+      "key=%2");
+  url = url.arg(userUrl).arg(settings.value("apiKey").toString());
+
+  qDebug() << "$$$$$$$$$$$ " << url;
+
+  return url;
+}
+
+void IssueActivityDialog::replyFinished(QNetworkReply* reply) {
+  QByteArray data(reply->read(reply->bytesAvailable()));
+
+  qDebug() << "------------------------------------------------";
+  qDebug() << "reply length is " << reply->bytesAvailable();
 }

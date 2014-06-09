@@ -31,7 +31,7 @@ class QLabel;
 class QComboBox;
 class QLineEdit;
 class QPushButton;
-
+class QNetworkAccessManager;
 class ActivitiesDataLoader;
 
 class IssueActivityDialog : public QDialog {
@@ -48,9 +48,15 @@ public slots:
   void onActivitiesLoaded(IssueActivityType* activitiesList);
   void onUpdateIssueDestails(const Issue& issue);
   void onCommitTimeSpent();
+
+private slots:
+  void replyFinished(QNetworkReply* reply);
   
 private:
   void sendUpdatedDetails(const QDomDocument& xmlDocument);
+  QString buildServerUrl();
+
+  QNetworkAccessManager* m_netMgr;
 
   QLabel* m_issueNumber;
   QLabel* m_issueDescription;
