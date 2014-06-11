@@ -22,31 +22,21 @@
 #ifndef TIME_ACTIVITIES_MODEL
 #define TIME_ACTIVITIES_MODEL
 
-// this is a simple data model that is used to store the activities one can 
-// use to book time against. This model is only updated once for the lifetime
-// of the application.
+#include <QAbstractListModel>
 
-#include <QDomElement>
-#include <QMap>
-#include <QString>
-#include <qglobal.h>
+class TimeEntryActivitiesModel : public QAbstractListModel {
+  Q_OBJECT
 
-class TimeActivitiesModel {
 public:
-  TimeActivitiesModel();
-  ~TimeActivitiesModel();
+  explicit TimeEntryActivitiesModel(QObject* parent = 0);
+  virtual ~TimeEntryActivitiesModel();
 
-  void updateFromXml(const QDomElement& issueElement);
-
-  QString findActivity(int index) const;
-  int activityCount() const;
-
-  QMap<int, QString> getActivities() const { return m_timeActivities; }
+  int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+  QVariant data(const QModelIndex& index,
+                int role = Qt::DisplayRole) const override;
 
 private:
-  QMap<int, QString> m_timeActivities;
-
-  Q_DISABLE_COPY(TimeActivitiesModel)
+  Q_DISABLE_COPY(TimeEntryActivitiesModel)
 };
 
 #endif  // TIME_ACTIVITIES_MODEL

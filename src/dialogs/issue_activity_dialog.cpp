@@ -32,9 +32,11 @@
 #include <QPushButton>
 #include <QSettings>
 
+#include "data/data.h"
+
 IssueActivityDialog::IssueActivityDialog(QWidget* parent)
   : QDialog(parent, Qt::CustomizeWindowHint | Qt::WindowTitleHint) {
-  // this dialog is model
+  // This dialog is modal.
   setModal(true);
 
   setWindowTitle("Issue Activity Dialog");
@@ -62,8 +64,13 @@ IssueActivityDialog::IssueActivityDialog(QWidget* parent)
 
   QHBoxLayout* activitySelectionLayout = new QHBoxLayout;
 
+  // Create a model for the time entry activities.
+  m_activitiesModel = new TimeEntryActivitiesModel(this);
+
   QLabel* m_timeActivityLabel = new QLabel("Issue Activity:");
   m_timeActivity = new QComboBox;
+  m_timeActivity->setModel(m_activitiesModel);
+
   activitySelectionLayout->addWidget(m_timeActivityLabel);
   activitySelectionLayout->addWidget(m_timeActivity);
 
@@ -123,11 +130,9 @@ void IssueActivityDialog::updateTimeSpent(float time) {
 void IssueActivityDialog::onActivitiesDataLoaderFinished() {
   qDebug() << "IssueActivityDialog::onActivitiesLoaded";
 
-  QVector<TimeEntryActivity> activities;
-  m_activitiesDataLoader->swapTimeEntryActivities(&activities);
-
-  for (const auto& it : activities)
-    m_timeActivity->addItem(it.name);
+  m_activitiesDataLoader->swapTimeEntryActivities(
+      &Data::Get().timeEntryActivities);
+  m_timeActivity->update();
 }
 
 void IssueActivityDialog::onUpdateIssueDestails(const Issue& issue) {
@@ -162,7 +167,12 @@ void IssueActivityDialog::onCommitTimeSpent() {
 
   QDomElement activityIdTag = doc.createElement("activity_id");
   root.appendChild(activityIdTag);
-  QDomText activityIdText = doc.createTextNode(m_timeActivity->currentText());
+
+  // Get the ID from the combo box.
+  int timeEntryActivityId =
+      Data::Get().timeEntryActivities.at(m_timeActivity->currentIndex()).id;
+
+  QDomText activityIdText = doc.createTextNode(QString::number(timeEntryActivityId));
   activityIdTag.appendChild(activityIdText);
 
   QDomElement commentsTag = doc.createElement("comments");

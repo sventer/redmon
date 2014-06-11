@@ -19,14 +19,15 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef TIME_COMMIT_DIALOG
-#define TIME_COMMIT_DIALOG
+#ifndef DIALOGS_TIME_COMMIT_DIALOG_H_
+#define DIALOGS_TIME_COMMIT_DIALOG_H_
 
 #include <QDialog>
 #include <QTime>
 
 #include "data/activities_data_loader.h"
 #include "data/issue.h"
+#include "models/time_activities_model.h"
 
 class QComboBox;
 class QLabel;
@@ -58,6 +59,9 @@ private:
 
   QNetworkAccessManager* m_netMgr;
 
+  // The model used to show the time entry activities.
+  TimeEntryActivitiesModel* m_activitiesModel;
+
   QLabel* m_issueNumber;
   QLabel* m_issueDescription;
   QLabel* m_timeSpent;
@@ -71,4 +75,4 @@ private:
   float m_time;
 };
 
-#endif  // TIME_COMMIT_DIALOG
+#endif  // DIALOGS_TIME_COMMIT_DIALOG_H_

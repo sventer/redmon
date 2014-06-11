@@ -48,8 +48,12 @@
 #include "views/issues_table_view.h"
 #include "dialogs/issue_activity_dialog.h"
 
+#include "models/time_activities_model.h"
+
 MainWindow::MainWindow(QWidget* parent)
   : QWidget(parent), m_isTrackingTime(false), m_isInitializeDone(false) {
+  TimeEntryActivitiesModel someModel;
+
   m_issueActivityDialog = new IssueActivityDialog();
   m_issueActivityDialog->hide();
 
