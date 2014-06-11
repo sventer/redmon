@@ -50,6 +50,7 @@ public:
   void swapIssues(QVector<Issue>* issues);
 
 signals:
+  void progress(int current, int max);
   void finished();
   void activitiesLoaded(TimeActivitiesModel*);
 
@@ -72,6 +73,10 @@ private:
 
   TimeActivitiesModel* m_timeActivitiesModel;
   IssueActivityDialog* m_dialog;
+
+  // Keep track of progress.
+  int m_currentProgress;
+  int m_maxProgress;
 };
 
 #endif  // DATA_DATA_LOADER_H_

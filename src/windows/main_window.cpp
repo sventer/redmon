@@ -32,6 +32,7 @@
 #include <QPushButton>
 #include <QResizeEvent>
 #include <QSettings>
+#include <QProgressBar>
 
 #include <QTimer>
 #include <QUrl>
@@ -60,9 +61,11 @@ MainWindow::MainWindow(QWidget* parent)
 
   // Create and link up the worker object that will load our issues for us.
   m_dataLoader = new DataLoader(this);
+  connect(m_dataLoader, SIGNAL(progress(int, int)), this,
+          SLOT(onDataLoaderProgress(int, int)));
   connect(m_dataLoader, SIGNAL(finished()), this, SLOT(onDataLoaderFinished()));
 
-  // Create controls.
+  // Create the main buttons.
 
   m_settingsButton = new QPushButton("Settings");
   connect(m_settingsButton, SIGNAL(clicked()), this,
@@ -78,6 +81,17 @@ MainWindow::MainWindow(QWidget* parent)
   m_stopButton = new QPushButton("Stop");
   connect(m_stopButton, SIGNAL(clicked()), this, SLOT(onStopButtonClicked()));
   m_stopButton->hide();
+
+  // Create the progress bar.
+
+  m_progressBar = new QProgressBar;
+  m_progressBar->setMinimum(0);
+  m_progressBar->setMaximum(100);
+  m_progressBar->setValue(50);
+  m_progressBar->setTextVisible(false);
+  m_progressBar->setVisible(false);
+
+  // Create the issues table.
 
   m_issuesTable = new IssuesTableView;
   m_tableIssuesModel = new IssuesTableModel;
@@ -106,6 +120,7 @@ MainWindow::MainWindow(QWidget* parent)
   mainLayout->setSpacing(0);
   mainLayout->addLayout(buttonsLayout);
   mainLayout->addWidget(m_issuesTable);
+  mainLayout->addWidget(m_progressBar);
 
   setLayout(mainLayout);
 
@@ -167,6 +182,13 @@ void MainWindow::onUpdateButtonClicked() {
   m_updateButton->setText("Updating...");
   m_updateButton->setEnabled(false);
 
+  // Show the progress bar.  We also assume that only one thing is going to be
+  // done.
+  m_progressBar->setVisible(true);
+  m_progressBar->setMinimum(0);
+  m_progressBar->setMaximum(1);
+  m_progressBar->setValue(0);
+
   // Start loading the issues.
   m_dataLoader->loadData();
 }
@@ -219,6 +241,11 @@ void MainWindow::onStopButtonClicked() {
   m_issuesTable->setEnabled(true);
 }
 
+void MainWindow::onDataLoaderProgress(int current, int max) {
+  m_progressBar->setValue(current);
+  m_progressBar->setMaximum(max);
+}
+
 void MainWindow::onDataLoaderFinished() {
   qDebug() << "MainWindow::onIssuesLoaded()";
 
@@ -238,6 +265,9 @@ void MainWindow::onDataLoaderFinished() {
   // Set the update button back to an enabled state.
   m_updateButton->setText("Update");
   m_updateButton->setEnabled(true);
+
+  // Hide the progress bar again.
+  m_progressBar->setVisible(false);
 
   // Start the update timer again.
   startTimer();

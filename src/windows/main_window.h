@@ -33,6 +33,7 @@ class QModeEvent;
 class QNetworkAccessManager;
 class QNetworkReply;
 class QPushButton;
+class QProgressBar;
 class QResizeEvent;
 class QTimer;
 class QTableView;
@@ -64,7 +65,9 @@ private slots:
   void onStartButtonClicked();
   void onStopButtonClicked();
 
+  void onDataLoaderProgress(int current, int max);
   void onDataLoaderFinished();
+
   void onIssueListTimerTimeout();
   void onIssuesListCurrentChanged(const QModelIndex& current,
                                   const QModelIndex& previous);
@@ -82,6 +85,8 @@ private:
   QPushButton* m_updateButton;
   QPushButton* m_startButton;
   QPushButton* m_stopButton;
+
+  QProgressBar* m_progressBar;
 
   // QListView* m_issuesList;
   IssuesTableView* m_issuesTable;

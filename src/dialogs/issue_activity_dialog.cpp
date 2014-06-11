@@ -185,15 +185,25 @@ void IssueActivityDialog::onCommitTimeSpent() {
 }
 
 void IssueActivityDialog::sendUpdatedDetails(const QDomDocument& xmlDocument) {
-  QNetworkAccessManager netMgr(this);
+  qDebug() << "sendUpdatedDetails";
+
+  QString apiKey;
+  {
+    QSettings settings;
+    apiKey = settings.value("apiKey").toString();
+  }
+  // If we don't have an api key, we can't do anything.
+  if (apiKey.isEmpty())
+    return;
 
   QNetworkRequest req(buildServerUrl());
-  QVariant contentType("Content-Type: application/xml");
-  req.setHeader(QNetworkRequest::ContentTypeHeader, contentType);
+  req.setHeader(QNetworkRequest::ContentTypeHeader,
+                "Content-Type: application/xml");
+  req.setRawHeader("X-Redmine-API-Key", apiKey.toLatin1());
 
-  qDebug() << xmlDocument.toString();
+  qDebug() << req.url();
 
-  netMgr.post(req, xmlDocument.toString().toLatin1());
+  m_netMgr->post(req, xmlDocument.toString().toLatin1());
 }
 
 QString IssueActivityDialog::buildServerUrl() {
@@ -205,19 +215,22 @@ QString IssueActivityDialog::buildServerUrl() {
   else
     userUrl = settings.value("serverUrl").toString();
 
-  QString url(
-      "http://%1/time_entries.xml?"
-      "key=%2");
-  url = url.arg(userUrl).arg(settings.value("apiKey").toString());
-
-  qDebug() << "$$$$$$$$$$$ " << url;
-
-  return url;
+  return QString("http://%1/time_entries.xml").arg(userUrl);
 }
 
 void IssueActivityDialog::replyFinished(QNetworkReply* reply) {
+  qDebug() << "replyFinished " << reply->bytesAvailable();
+
+  qDebug() << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
+
+  for (auto& item : reply->rawHeaderList()) {
+    qDebug() << item;
+  }
+
+#if 0
   QByteArray data(reply->read(reply->bytesAvailable()));
 
   qDebug() << "------------------------------------------------";
-  qDebug() << "reply length is " << reply->bytesAvailable();
+  qDebug() << "reply length is " << data.size();
+#endif  // 0
 }

@@ -55,7 +55,8 @@ void DataLoader::swapIssues(QVector<Issue>* issues) { issues->swap(m_issues); }
 
 void DataLoader::onIssuesManagerReply(QNetworkReply* reply) {
   qDebug() << "DataLoader::onIssuesManagerReply";
-  qDebug() << "DataLoader::onIssuesManagerReply bytes receiced [" << QString::number(reply->bytesAvailable()) << "]";
+  qDebug() << "DataLoader::onIssuesManagerReply bytes receiced ["
+           << QString::number(reply->bytesAvailable()) << "]";
 
   QByteArray data(reply->read(reply->bytesAvailable()));
 
@@ -71,6 +72,17 @@ void DataLoader::onIssuesManagerReply(QNetworkReply* reply) {
   int limit = -1;
   loadCountersFromElement(&root, &totalCount, &offset, &limit);
 
+  // If this is the first page we receive, update the max progress.
+  if (offset == 0) {
+    // We loaded one page.
+    m_currentProgress = 1;
+    // Set the max progress.
+    m_maxProgress = static_cast<int>(
+        ceil(static_cast<float>(totalCount) / static_cast<float>(limit)));
+
+    emit progress(m_currentProgress, m_maxProgress);
+  }
+
   if (root.tagName() == "issues") {
     // We put a check in here to see if nothing was added to the issues list,
     // just so we never go into a neverending loop.
@@ -83,6 +95,10 @@ void DataLoader::onIssuesManagerReply(QNetworkReply* reply) {
       // Create and update the issue.
       Issue issue;
       updateIssueFromXml(issueElem, &issue);
+
+      // We're going to do another item of work, so increase the max progress.
+      ++m_maxProgress;
+      emit progress(m_currentProgress, m_maxProgress);
 
       // Create a loader for the time entries.
       TimeEntryLoader* loader = new TimeEntryLoader(issue, this);
@@ -104,6 +120,11 @@ void DataLoader::onIssuesManagerReply(QNetworkReply* reply) {
 
 void DataLoader::onTimeEntryLoaderFinished(TimeEntryLoader* loader) {
   Q_ASSERT(loader);
+
+  // If a time entry came back, then we've completed a piece of work.  So update
+  // the progress.
+  ++m_currentProgress;
+  emit progress(m_currentProgress, m_maxProgress);
 
   // Find the loader in the list.
   TimeEntryLoadersType::iterator it =
@@ -127,6 +148,11 @@ void DataLoader::onTimeEntryLoaderFinished(TimeEntryLoader* loader) {
 
 void DataLoader::startLoadIssues(int offset) {
   QNetworkRequest request(buildIssuesUrl(offset));
+
+  QSettings settings;
+  request.setRawHeader("X-Redmine-API-Key",
+                       settings.value("apiKey").toString().toLatin1());
+
   qDebug() << "Requesting:" << request.url();
   m_issuesManager->get(request);
 }
@@ -138,16 +164,14 @@ QString DataLoader::buildIssuesUrl(int offset) {
   // if the user specified the protocol as part of the url remove the protocol
   QString userUrl = settings.value("serverUrl").toString();
   if (settings.value("serverUrl").toString().startsWith("http://"))
-	  userUrl = settings.value("serverUrl").toString().split("//")[1];
+    userUrl = settings.value("serverUrl").toString().split("//")[1];
   else
-	  userUrl = settings.value("serverUrl").toString();
+    userUrl = settings.value("serverUrl").toString();
 
   QString url(
       "http://%1/issues.xml?"
-      "key=%2&limit=100&offset=%3&sort=priority:desc,id:desc");
-  url = url.arg(userUrl)
-            .arg(settings.value("apiKey").toString())
-            .arg(offset);
+      "&limit=100&offset=%2&sort=priority:desc,id:desc");
+  url = url.arg(userUrl).arg(offset);
 
   if (settings.value("onlyMyIssues", true).toBool()) {
     // Only show our own issues.
