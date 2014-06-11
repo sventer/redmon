@@ -22,35 +22,42 @@
 #ifndef DATA_ACTIVITIES_DATA_LOADER_H_
 #define DATA_ACTIVITIES_DATA_LOADER_H_
 
-#include <QMap>
-#include <QNetworkAccessManager>
+#include <QObject>
+#include <QVector>
 
+class QNetworkAccessManager;
 class QNetworkReply;
 
-typedef QMap<int, QString> IssueActivityType;
-Q_DECLARE_METATYPE(IssueActivityType)
+#include "data/time_entry_activity.h"
 
 class ActivitiesDataLoader : public QObject {
   Q_OBJECT
-  
+
 public:
-  ActivitiesDataLoader(QObject* parent = 0);
+  explicit ActivitiesDataLoader(QObject* parent = 0);
   virtual ~ActivitiesDataLoader();
-  
+
+  // Start the process of loading the data from the server.
   void loadData();
 
+  // Swap the time entry activities into the specified list.
+  void swapTimeEntryActivities(
+      QVector<TimeEntryActivity>* timeEntryActivitiesOut);
+
 signals:
-  void activitiesLoaded(IssueActivityType* activities);
-  
+  void finished();
+
 private slots:
-  void onActivitiesManagerReply(QNetworkReply* reply);
+  void onActivitiesManagerFinished(QNetworkReply* reply);
 
 private:
   QString buildActivityRequestUrl() const;
-  
-  QNetworkAccessManager* m_activitiesManager;
-  
-  QMap<int, QString> m_activities;
+
+  // The NAM we use to pull the data from the server.
+  QNetworkAccessManager* m_nam;
+
+  // Store the list of time entry activities we're loading internally.
+  QVector<TimeEntryActivity> m_timeEntryActivities;
 };
 
 #endif  // DATA_ACTIVITIES_DATA_LOADER_H_

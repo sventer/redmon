@@ -22,16 +22,17 @@
 #ifndef DATA_DATA_H_
 #define DATA_DATA_H_
 
-#include <QDomElement>
 #include <QVector>
 
 #include "data/issue.h"
+#include "data/time_entry_activity.h"
 
 class Data {
 public:
   static Data& Get();
 
   QVector<Issue> issues;
+  QVector<TimeEntryActivity> timeEntryActivities;
 };
 
 #endif  // DATA_DATA_H_

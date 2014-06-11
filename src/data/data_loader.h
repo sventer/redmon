@@ -52,7 +52,6 @@ public:
 signals:
   void progress(int current, int max);
   void finished();
-  void activitiesLoaded(TimeActivitiesModel*);
 
 private slots:
   void onIssuesManagerReply(QNetworkReply* reply);

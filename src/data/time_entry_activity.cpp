@@ -19,56 +19,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef TIME_COMMIT_DIALOG
-#define TIME_COMMIT_DIALOG
+#include "data/time_entry_activity.h"
 
-#include <QDialog>
-#include <QTime>
+void updateTimeEntryActivityFromXml(const QDomElement& elem,
+                                    TimeEntryActivity* timeEntryActivityOut) {
+  Q_ASSERT(timeEntryActivityOut);
 
-#include "data/activities_data_loader.h"
-#include "data/issue.h"
-
-class QComboBox;
-class QLabel;
-class QLineEdit;
-class QNetworkAccessManager;
-class QNetworkReply;
-
-class IssueActivityDialog : public QDialog {
-  Q_OBJECT
-
-public:
-  IssueActivityDialog(QWidget* parent = 0);
-  virtual ~IssueActivityDialog();
-
-  void updateDetails(const Issue& issue);
-  void updateTimeSpent(float time);
-
-public slots:
-  void onActivitiesDataLoaderFinished();
-  void onUpdateIssueDestails(const Issue& issue);
-  void onCommitTimeSpent();
-
-private slots:
-  void replyFinished(QNetworkReply* reply);
-  
-private:
-  void sendUpdatedDetails(const QDomDocument& xmlDocument);
-  QString buildServerUrl();
-
-  QNetworkAccessManager* m_netMgr;
-
-  QLabel* m_issueNumber;
-  QLabel* m_issueDescription;
-  QLabel* m_timeSpent;
-  QComboBox* m_timeActivity;
-  QLineEdit* m_activityNote;
-  QPushButton* m_commitTimeButton;
-  QPushButton* m_cancelTimeButton;
-  
-  ActivitiesDataLoader* m_activitiesDataLoader;
-
-  float m_time;
-};
-
-#endif  // TIME_COMMIT_DIALOG
+  for (QDomElement childElem = elem.firstChildElement(); !childElem.isNull();
+       childElem = childElem.nextSiblingElement()) {
+    if (childElem.tagName() == "id")
+      timeEntryActivityOut->id = childElem.text().toInt();
+    if (childElem.tagName() == "name")
+      timeEntryActivityOut->name = childElem.text();
+  }
+}

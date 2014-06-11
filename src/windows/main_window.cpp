@@ -130,8 +130,7 @@ MainWindow::MainWindow(QWidget* parent)
   startTimer();
 }
 
-MainWindow::~MainWindow() {
-}
+MainWindow::~MainWindow() {}
 
 void MainWindow::showEvent(QShowEvent* event) {
   QWidget::showEvent(event);
@@ -306,12 +305,12 @@ void MainWindow::startTrackingTime(int issueId) {
   qDebug() << "Tracking time for:" << issueId;
 
   m_startTime = QDateTime::currentDateTime();
-  
+
   m_isTrackingTime = true;
 }
 
-void MainWindow::stopTrackingTime() { 
-  qDebug() << "Stop tracking time"; 
+void MainWindow::stopTrackingTime() {
+  qDebug() << "Stop tracking time";
 
   m_stopTime = QDateTime::currentDateTime();
 

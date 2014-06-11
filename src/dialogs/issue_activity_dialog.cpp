@@ -93,8 +93,8 @@ IssueActivityDialog::IssueActivityDialog(QWidget* parent)
   setLayout(activityLayout);
 
   m_activitiesDataLoader = new ActivitiesDataLoader();
-  connect(m_activitiesDataLoader, SIGNAL(activitiesLoaded(IssueActivityType*)),
-          this, SLOT(onActivitiesLoaded(IssueActivityType*)));
+  connect(m_activitiesDataLoader, SIGNAL(finished()), this,
+          SLOT(onActivitiesDataLoaderFinished()));
   m_activitiesDataLoader->loadData();
 
   m_netMgr = new QNetworkAccessManager(this);
@@ -120,16 +120,14 @@ void IssueActivityDialog::updateTimeSpent(float time) {
   m_timeSpent->setText(timeStr);
 }
 
-void IssueActivityDialog::onActivitiesLoaded(
-    IssueActivityType* activitiesList) {
+void IssueActivityDialog::onActivitiesDataLoaderFinished() {
   qDebug() << "IssueActivityDialog::onActivitiesLoaded";
 
-  for (IssueActivityType::iterator bi(activitiesList->begin()),
-       ei(activitiesList->end());
-       bi != ei; ++bi) {
-    QString activity = bi.value();
-    m_timeActivity->addItem(activity);
-  }
+  QVector<TimeEntryActivity> activities;
+  m_activitiesDataLoader->swapTimeEntryActivities(&activities);
+
+  for (const auto& it : activities)
+    m_timeActivity->addItem(it.name);
 }
 
 void IssueActivityDialog::onUpdateIssueDestails(const Issue& issue) {

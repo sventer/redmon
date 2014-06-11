@@ -19,56 +19,22 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef TIME_COMMIT_DIALOG
-#define TIME_COMMIT_DIALOG
+#ifndef DATA_TIME_ENTRY_ACTIVITY_H_
+#define DATA_TIME_ENTRY_ACTIVITY_H_
 
-#include <QDialog>
-#include <QTime>
+#include <QDomElement>
+#include <QString>
 
-#include "data/activities_data_loader.h"
-#include "data/issue.h"
+struct TimeEntryActivity {
+  int id;
+  QString name;
 
-class QComboBox;
-class QLabel;
-class QLineEdit;
-class QNetworkAccessManager;
-class QNetworkReply;
+  TimeEntryActivity() : id(0) {}
 
-class IssueActivityDialog : public QDialog {
-  Q_OBJECT
-
-public:
-  IssueActivityDialog(QWidget* parent = 0);
-  virtual ~IssueActivityDialog();
-
-  void updateDetails(const Issue& issue);
-  void updateTimeSpent(float time);
-
-public slots:
-  void onActivitiesDataLoaderFinished();
-  void onUpdateIssueDestails(const Issue& issue);
-  void onCommitTimeSpent();
-
-private slots:
-  void replyFinished(QNetworkReply* reply);
-  
-private:
-  void sendUpdatedDetails(const QDomDocument& xmlDocument);
-  QString buildServerUrl();
-
-  QNetworkAccessManager* m_netMgr;
-
-  QLabel* m_issueNumber;
-  QLabel* m_issueDescription;
-  QLabel* m_timeSpent;
-  QComboBox* m_timeActivity;
-  QLineEdit* m_activityNote;
-  QPushButton* m_commitTimeButton;
-  QPushButton* m_cancelTimeButton;
-  
-  ActivitiesDataLoader* m_activitiesDataLoader;
-
-  float m_time;
+  TimeEntryActivity(int id, const QString& name) : id(id), name(name) {}
 };
 
-#endif  // TIME_COMMIT_DIALOG
+void updateTimeEntryActivityFromXml(const QDomElement& elem,
+                                    TimeEntryActivity* timeEntryActivityOut);
+
+#endif  // DATA_TIME_ENTRY_ACTIVITY_H_

@@ -27,57 +27,58 @@
 #include <QNetworkRequest>
 #include <QSettings>
 
-ActivitiesDataLoader::ActivitiesDataLoader(QObject* parent)
-  : QObject(parent) {
-  m_activitiesManager = new QNetworkAccessManager(this);
-  connect(m_activitiesManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(onActivitiesManagerReply(QNetworkReply*)));
+#include "data/time_entry_activity.h"
+
+ActivitiesDataLoader::ActivitiesDataLoader(QObject* parent) : QObject(parent) {
+  m_nam = new QNetworkAccessManager(this);
+  connect(m_nam, SIGNAL(finished(QNetworkReply*)), this,
+          SLOT(onActivitiesManagerFinished(QNetworkReply*)));
 }
 
-ActivitiesDataLoader::~ActivitiesDataLoader() {
-}
-  
+ActivitiesDataLoader::~ActivitiesDataLoader() {}
+
 void ActivitiesDataLoader::loadData() {
   qDebug() << "ActivitiesDataLoader::loadData()";
-  
+
   QNetworkRequest request(buildActivityRequestUrl());
-  m_activitiesManager->get(request);
+  m_nam->get(request);
 }
 
-void ActivitiesDataLoader::onActivitiesManagerReply(QNetworkReply* reply) {
-  qDebug() << "ActivitiesDataLoader::onActivitiesManagerReply";
-  
+void ActivitiesDataLoader::swapTimeEntryActivities(
+    QVector<TimeEntryActivity>* timeEntryActivitiesOut) {
+  Q_ASSERT(timeEntryActivitiesOut);
+
+  timeEntryActivitiesOut->swap(m_timeEntryActivities);
+}
+
+void ActivitiesDataLoader::onActivitiesManagerFinished(QNetworkReply* reply) {
+  qDebug() << "ActivitiesDataLoader::onActivitiesManagerFinished";
+
   QByteArray data(reply->read(reply->bytesAvailable()));
-  
-  // create a XML document from the data received
+
+  // Create a XML document from the data received.
   QDomDocument document;
   document.setContent(data);
-  
+
   QDomElement root(document.documentElement());
-  
-  // check that we hava valid content
+
+  // Check that we hava valid content.
   if (root.tagName() == "time_entry_activities") {
-    for (QDomElement elem = root.firstChildElement("time_entry_activity"); !elem.isNull(); elem = elem.nextSiblingElement("time_entry_activity")) {
-      int key;
-      QString value;
-      for (QDomElement childElem = elem.firstChildElement(); !childElem.isNull(); childElem = childElem.nextSiblingElement()) {
-        if (childElem.tagName() == "id")
-          key = childElem.text().toInt();
-        if (childElem.tagName() == "name")
-          value = childElem.text();
-      }
-      
-      // only insert this entry if value is not empty
-      if (!value.isEmpty())
-        m_activities.insert(key, value);
+    for (QDomElement elem = root.firstChildElement("time_entry_activity");
+         !elem.isNull();
+         elem = elem.nextSiblingElement("time_entry_activity")) {
+      TimeEntryActivity timeEntryActivity;
+      updateTimeEntryActivityFromXml(elem, &timeEntryActivity);
+      m_timeEntryActivities.append(timeEntryActivity);
     }
   }
-  
-  emit activitiesLoaded(&m_activities);
+
+  emit finished();
 }
 
 QString ActivitiesDataLoader::buildActivityRequestUrl() const {
   QSettings settings;
-  
+
   // strip the protocol from the user supplied server user
   QString modUrl = settings.value("serverUrl").toString();
   if (modUrl.startsWith("http://")) {
@@ -85,11 +86,9 @@ QString ActivitiesDataLoader::buildActivityRequestUrl() const {
   } else {
     modUrl = settings.value("serverUrl").toString();
   }
-  
+
   QString url("http://%1/enumerations/time_entry_activities.xml?key=%2");
   url = url.arg(modUrl).arg(settings.value("apiKey").toString());
-  
-  qDebug() << "ActivitiesDataLoader::buildActivityRequestUrl -- [" << url << "]";
-  
+
   return url;
 }
