@@ -22,21 +22,15 @@
 #include "dialogs/issue_activity_dialog.h"
 
 #include <QComboBox>
-#include <QDate>
-#include <QDomElement>
 #include <QFormLayout>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
-#include <QNetworkRequest>
-#include <QPushButton>
-#include <QVBoxLayout>
-#include <QDebug>
 #include <QNetworkAccessManager>
+#include <QNetworkRequest>
 #include <QNetworkReply>
+#include <QPushButton>
 #include <QSettings>
-
-#include "data/activities_data_loader.h"
 
 IssueActivityDialog::IssueActivityDialog(QWidget* parent)
   : QDialog(parent, Qt::CustomizeWindowHint | Qt::WindowTitleHint) {
@@ -86,7 +80,8 @@ IssueActivityDialog::IssueActivityDialog(QWidget* parent)
   buttonLayout->addWidget(m_cancelTimeButton);
 
   connect(m_cancelTimeButton, SIGNAL(clicked()), this, SLOT(hide()));
-  connect(m_commitTimeButton, SIGNAL(clicked()), this, SLOT(onCommitTimeSpent()));
+  connect(m_commitTimeButton, SIGNAL(clicked()), this,
+          SLOT(onCommitTimeSpent()));
 
   QFormLayout* activityLayout = new QFormLayout;
   activityLayout->addRow(issueNumberLayout);
@@ -103,7 +98,8 @@ IssueActivityDialog::IssueActivityDialog(QWidget* parent)
   m_activitiesDataLoader->loadData();
 
   m_netMgr = new QNetworkAccessManager(this);
-  connect(m_netMgr, SIGNAL(finished(QNetworkReply*)), this, SLOT(replyFinished(QNetworkReply*)));
+  connect(m_netMgr, SIGNAL(finished(QNetworkReply*)), this,
+          SLOT(replyFinished(QNetworkReply*)));
 }
 
 IssueActivityDialog::~IssueActivityDialog() {}
@@ -143,7 +139,8 @@ void IssueActivityDialog::onUpdateIssueDestails(const Issue& issue) {
 
 void IssueActivityDialog::onCommitTimeSpent() {
   QDomDocument doc;
-  QDomProcessingInstruction inst = doc.createProcessingInstruction("xml", "version='1.0' encodeing='UTF-8'");
+  QDomProcessingInstruction inst =
+      doc.createProcessingInstruction("xml", "version='1.0' encodeing='UTF-8'");
   doc.appendChild(inst);
 
   QDomElement root = doc.createElement("time_entry");
@@ -157,9 +154,7 @@ void IssueActivityDialog::onCommitTimeSpent() {
   QDomElement dateTag = doc.createElement("spent_on");
   root.appendChild(dateTag);
   QDate date = QDate::currentDate();
-  QString dateStr("%1-%2-%3");
-  dateStr = dateStr.arg(date.year()).arg(date.month()).arg(date.day());
-  QDomText dateText = doc.createTextNode(dateStr);
+  QDomText dateText = doc.createTextNode(date.toString("yyyy-MM-dd"));
   dateTag.appendChild(dateText);
 
   QDomElement hoursTag = doc.createElement("hours");
@@ -198,7 +193,7 @@ void IssueActivityDialog::sendUpdatedDetails(const QDomDocument& xmlDocument) {
 
   QNetworkRequest req(buildServerUrl());
   req.setHeader(QNetworkRequest::ContentTypeHeader,
-                "Content-Type: application/xml");
+                "application/xml; charset=\"utf-8\"");
   req.setRawHeader("X-Redmine-API-Key", apiKey.toLatin1());
 
   qDebug() << req.url();
@@ -219,18 +214,11 @@ QString IssueActivityDialog::buildServerUrl() {
 }
 
 void IssueActivityDialog::replyFinished(QNetworkReply* reply) {
-  qDebug() << "replyFinished " << reply->bytesAvailable();
+  int resultCode =
+      reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+  if (resultCode != 200) {
+    QByteArray data(reply->read(reply->bytesAvailable()));
 
-  qDebug() << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
-
-  for (auto& item : reply->rawHeaderList()) {
-    qDebug() << item;
+    qDebug() << data;
   }
-
-#if 0
-  QByteArray data(reply->read(reply->bytesAvailable()));
-
-  qDebug() << "------------------------------------------------";
-  qDebug() << "reply length is " << data.size();
-#endif  // 0
 }

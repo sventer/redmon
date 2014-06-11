@@ -19,8 +19,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef ACTIVITIES_DATA_LOADER
-#define ACTIVITIES_DATA_LOADER
+#ifndef DATA_ACTIVITIES_DATA_LOADER_H_
+#define DATA_ACTIVITIES_DATA_LOADER_H_
 
 #include <QMap>
 #include <QNetworkAccessManager>
@@ -53,4 +53,4 @@ private:
   QMap<int, QString> m_activities;
 };
 
-#endif  // ACTIVITIES_DATA_LOADER
+#endif  // DATA_ACTIVITIES_DATA_LOADER_H_

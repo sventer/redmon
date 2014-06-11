@@ -24,15 +24,15 @@
 
 #include <QDialog>
 #include <QTime>
+
 #include "data/activities_data_loader.h"
 #include "data/issue.h"
 
-class QLabel;
 class QComboBox;
+class QLabel;
 class QLineEdit;
-class QPushButton;
 class QNetworkAccessManager;
-class ActivitiesDataLoader;
+class QNetworkReply;
 
 class IssueActivityDialog : public QDialog {
   Q_OBJECT
