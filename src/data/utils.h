@@ -22,9 +22,13 @@
 #ifndef DATA_UTILS_H_
 #define DATA_UTILS_H_
 
+#include <QString>
+
 class QDomElement;
 
 void loadCountersFromElement(QDomElement* elem, int* totalCountOut,
                              int* offsetOut, int* limitOut);
+
+QString buildServerUrl(const QString& path);
 
 #endif  // DATA_UTILS_H_

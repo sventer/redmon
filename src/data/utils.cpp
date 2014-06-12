@@ -23,6 +23,7 @@
 
 #include <QDomElement>
 #include <QDebug>
+#include <QSettings>
 
 void loadCountersFromElement(QDomElement* elem, int* totalCountOut,
                              int* offsetOut, int* limitOut) {
@@ -44,4 +45,18 @@ void loadCountersFromElement(QDomElement* elem, int* totalCountOut,
   attr = elem->attributeNode("limit");
   if (!attr.isNull())
     *limitOut = attr.value().toInt();
+}
+
+QString buildServerUrl(const QString& path) {
+  QSettings settings;
+
+  QString str("http://%1");
+  str = str.arg(settings.value("serverUrl").toString());
+
+  if (!path.startsWith('/'))
+    str.append('/');
+
+  str.append(path);
+
+  return str;
 }

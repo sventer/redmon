@@ -42,13 +42,13 @@
 #include "config.h"
 #include "data/data.h"
 #include "data/data_loader.h"
-#include "windows/settings_window.h"
+#include "dialogs/issue_activity_dialog.h"
 #include "models/issues_table_model.h"
 #include "models/issue_table_item_delegate.h"
-#include "views/issues_table_view.h"
-#include "dialogs/issue_activity_dialog.h"
-
 #include "models/time_activities_model.h"
+#include "views/issues_table_view.h"
+#include "views/active_issue_widget.h"
+#include "windows/settings_window.h"
 
 MainWindow::MainWindow(QWidget* parent)
   : QWidget(parent), m_isTrackingTime(false), m_isInitializeDone(false) {
@@ -85,6 +85,13 @@ MainWindow::MainWindow(QWidget* parent)
   m_stopButton = new QPushButton("Stop");
   connect(m_stopButton, SIGNAL(clicked()), this, SLOT(onStopButtonClicked()));
   m_stopButton->hide();
+
+  // Create the active issue widget.
+
+  m_activeIssueWidget = new ActiveIssueWidget;
+  m_activeIssueWidget->hide();
+  connect(m_activeIssueWidget, SIGNAL(trackingCompleted()), this,
+          SLOT(onActiveIssueWidgetTrackingCompleted()));
 
   // Create the progress bar.
 
@@ -124,6 +131,7 @@ MainWindow::MainWindow(QWidget* parent)
   mainLayout->setMargin(0);
   mainLayout->setSpacing(0);
   mainLayout->addLayout(buttonsLayout);
+  mainLayout->addWidget(m_activeIssueWidget);
   mainLayout->addWidget(m_issuesTable);
   mainLayout->addWidget(m_progressBar);
 
@@ -198,6 +206,18 @@ void MainWindow::onUpdateButtonClicked() {
 }
 
 void MainWindow::onStartButtonClicked() {
+  // Disable the start button.
+  m_startButton->setEnabled(false);
+
+  // Get the selected issue.
+  Issue issue;
+  m_tableIssuesModel->getIssue(m_issuesTable->selectedRow(), &issue);
+
+  // Start tracking the issue.
+  m_activeIssueWidget->startTrackingIssue(issue);
+  m_activeIssueWidget->show();
+
+#if 0
   // If we are already tracking time, don't do anything.
   if (m_isTrackingTime)
     return;
@@ -218,6 +238,7 @@ void MainWindow::onStartButtonClicked() {
 
   // Start.
   startTrackingTime(issue.id);
+#endif  // 0
 }
 
 void MainWindow::onStopButtonClicked() {
@@ -275,6 +296,14 @@ void MainWindow::onDataLoaderFinished() {
 
   // Start the update timer again.
   startTimer();
+}
+
+void MainWindow::onActiveIssueWidgetTrackingCompleted() {
+  // Enable the start button again.
+  m_startButton->setEnabled(true);
+
+  // Hide the active issue widget.
+  m_activeIssueWidget->hide();
 }
 
 void MainWindow::onIssueListTimerTimeout() { onUpdateButtonClicked(); }

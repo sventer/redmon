@@ -38,6 +38,7 @@ class QResizeEvent;
 class QTimer;
 class QTableView;
 
+class ActiveIssueWidget;
 class DataLoader;
 class IssuesTableModel;
 class IssueActivityDialog;
@@ -67,6 +68,8 @@ private slots:
 
   void onDataLoaderProgress(int current, int max);
   void onDataLoaderFinished();
+
+  void onActiveIssueWidgetTrackingCompleted();
 
   void onIssueListTimerTimeout();
   void onIssuesListCurrentChanged(const QModelIndex& current,
@@ -105,6 +108,9 @@ private:
   bool m_isInitializeDone;
 
   IssueActivityDialog* m_issueActivityDialog;
+
+  // The widget that display's the current active issue.
+  ActiveIssueWidget* m_activeIssueWidget;
 
   QDateTime m_startTime;
   QDateTime m_stopTime;
