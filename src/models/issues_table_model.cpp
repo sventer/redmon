@@ -24,7 +24,15 @@
 #include <QVariant>
 #include <QDebug>
 
+#include <algorithm>
+
 #include "data/data.h"
+
+namespace issues {
+  bool sortModelData(Issue a, Issue b) {
+    return a.priorityId > b.priorityId;
+  }
+}
 
 IssuesTableModel::IssuesTableModel(QObject* parent)
   : QAbstractTableModel(parent) {
@@ -115,6 +123,10 @@ bool IssuesTableModel::insertIssue(const Issue& issue) {
   }
 
   return false;
+}
+
+void IssuesTableModel::sortData() {
+  std::sort(_issues.begin(), _issues.end(), issues::sortModelData);
 }
 
 bool IssuesTableModel::getIssue(int row, Issue* issue) {

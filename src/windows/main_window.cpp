@@ -211,6 +211,7 @@ void MainWindow::onDataLoaderFinished() {
     m_tableIssuesModel->insertIssue(Data::Get().issues.at(idx));
 
   if (totalIssues > 0) {
+    m_tableIssuesModel->sortData();
     emit onDataLoaded();
   }
 

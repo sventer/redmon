@@ -43,6 +43,7 @@ public:
 
   // instead of using one of the insertRow(s) functions we provide our own insertion function
   bool insertIssue(const Issue& issue);
+  void sortData();
 
   // get the issue at location (row)
   bool getIssue(int row, Issue* issue);
