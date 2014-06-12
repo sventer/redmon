@@ -22,11 +22,14 @@
 #include "views/issues_table_view.h"
 
 #include <QDebug>
+#include <QDesktopServices>
 #include <QHeaderView>
 #include <QSettings>
+#include <QUrl>
 
 #include "models/issues_table_model.h"
 #include "config.h"
+#include "data/utils.h"
 
 IssuesTableView::IssuesTableView(QWidget* parent)
   : QTableView(parent), m_selectedRow(-1), m_selectedIssueId(0) {
@@ -35,6 +38,8 @@ IssuesTableView::IssuesTableView(QWidget* parent)
 
   connect(horizontalHeader(), SIGNAL(sectionResized(int, int, int)), this,
           SLOT(onHorizontalHeaderSectionResized(int, int, int)));
+  connect(this, SIGNAL(doubleClicked(const QModelIndex&)), this,
+          SLOT(onDoubleClicked(const QModelIndex&)));
 }
 
 void IssuesTableView::setModel(QAbstractItemModel* model) {
@@ -76,6 +81,12 @@ void IssuesTableView::onHorizontalHeaderSectionResized(int logicalIndex,
   QSettings settings;
 
   settings.setValue(QString("col_%1").arg(logicalIndex), newSize);
+}
+
+void IssuesTableView::onDoubleClicked(const QModelIndex& index) {
+  QModelIndex idx = model()->index(index.row(), 0);
+  QString path(QString("issues/%1").arg(model()->data(idx, 0).toString()));
+  QDesktopServices::openUrl(buildServerUrl(path));
 }
 
 // we store the issue id so that, when the tabel is recreated we can highlight the

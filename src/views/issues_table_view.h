@@ -50,6 +50,7 @@ public slots:
 private slots:
   void onHorizontalHeaderSectionResized(int logicalIndex, int oldSize,
                                         int newSize);
+  void onDoubleClicked(const QModelIndex& index);
 
 private:
   void storeCurrentSelection();
