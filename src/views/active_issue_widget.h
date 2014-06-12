@@ -35,6 +35,8 @@ class QNetworkReply;
 class QPushButton;
 class QTimer;
 
+class ActivitiesDataLoader;
+
 class ActiveIssueWidget : public QWidget {
   Q_OBJECT
 
@@ -55,6 +57,8 @@ private slots:
   void onTimerExpired();
 
   void onNamFinished(QNetworkReply* reply);
+
+  void onActivitiesDataLoaderFinished();
 
 private:
   // Reset all the widget values to the default.
@@ -89,6 +93,9 @@ private:
 
   // The NAM we use to post new time entries.
   QNetworkAccessManager* m_nam;
+
+  // The loader we use to update the time entry activities.
+  ActivitiesDataLoader* m_activitiesDataLoader;
 
   Q_DISABLE_COPY(ActiveIssueWidget)
 };

@@ -30,7 +30,6 @@
 #include "data/time_entry_loader.h"
 #include "data/utils.h"
 #include "models/time_activities_model.h"
-#include "dialogs/issue_activity_dialog.h"
 
 DataLoader::DataLoader(QObject* parent) : QObject(parent) {
   m_issuesManager = new QNetworkAccessManager(this);

@@ -42,7 +42,6 @@
 #include "config.h"
 #include "data/data.h"
 #include "data/data_loader.h"
-#include "dialogs/issue_activity_dialog.h"
 #include "models/issues_table_model.h"
 #include "models/issue_table_item_delegate.h"
 #include "models/time_activities_model.h"
@@ -51,11 +50,8 @@
 #include "windows/settings_window.h"
 
 MainWindow::MainWindow(QWidget* parent)
-  : QWidget(parent), m_isTrackingTime(false), m_isInitializeDone(false) {
+  : QWidget(parent) {
   TimeEntryActivitiesModel someModel;
-
-  m_issueActivityDialog = new IssueActivityDialog();
-  m_issueActivityDialog->hide();
 
   // Position the window to the last place we stored it at.
   QPoint mainWindowPos(Config::Get().mainWindowPos());
@@ -81,10 +77,6 @@ MainWindow::MainWindow(QWidget* parent)
 
   m_startButton = new QPushButton("Start");
   connect(m_startButton, SIGNAL(clicked()), this, SLOT(onStartButtonClicked()));
-
-  m_stopButton = new QPushButton("Stop");
-  connect(m_stopButton, SIGNAL(clicked()), this, SLOT(onStopButtonClicked()));
-  m_stopButton->hide();
 
   // Create the active issue widget.
 
@@ -125,7 +117,6 @@ MainWindow::MainWindow(QWidget* parent)
   buttonsLayout->addWidget(m_settingsButton);
   buttonsLayout->addWidget(m_updateButton);
   buttonsLayout->addWidget(m_startButton);
-  buttonsLayout->addWidget(m_stopButton);
 
   QVBoxLayout* mainLayout = new QVBoxLayout(this);
   mainLayout->setMargin(0);
@@ -139,27 +130,13 @@ MainWindow::MainWindow(QWidget* parent)
 
   m_issueListTimer = new QTimer(this);
   connect(m_issueListTimer, SIGNAL(timeout()), this,
-          SLOT(onIssueListTimerTimeout()));
-  startTimer();
+          SLOT(onUpdateButtonClicked()));
+
+  // Do an update.
+  onUpdateButtonClicked();
 }
 
 MainWindow::~MainWindow() {}
-
-void MainWindow::showEvent(QShowEvent* event) {
-  QWidget::showEvent(event);
-
-  if (event->spontaneous())
-    return;
-
-  // we return if we have performed the initial update request
-  if (m_isInitializeDone)
-    return;
-
-  // request an initial issue update
-  onUpdateButtonClicked();
-
-  m_isInitializeDone = true;
-}
 
 void MainWindow::moveEvent(QMoveEvent* event) {
   QWidget::moveEvent(event);
@@ -216,54 +193,6 @@ void MainWindow::onStartButtonClicked() {
   // Start tracking the issue.
   m_activeIssueWidget->startTrackingIssue(issue);
   m_activeIssueWidget->show();
-
-#if 0
-  // If we are already tracking time, don't do anything.
-  if (m_isTrackingTime)
-    return;
-
-  // If there is nothing selected in the issue list, don't do anything.
-  if (m_issuesTable->selectedRow() < 0)
-    return;
-
-  m_issuesTable->setEnabled(false);
-
-  // Swap the buttons out.
-  m_startButton->hide();
-  m_stopButton->show();
-
-  // Get the issue.
-  Issue issue;
-  m_tableIssuesModel->getIssue(m_issuesTable->selectedRow(), &issue);
-
-  // Start.
-  startTrackingTime(issue.id);
-#endif  // 0
-}
-
-void MainWindow::onStopButtonClicked() {
-  // If we are not tracking time, don't do anything.
-  if (!m_isTrackingTime)
-    return;
-
-  Issue issue;
-  m_tableIssuesModel->getIssue(m_issuesTable->selectedRow(), &issue);
-
-  stopTrackingTime();
-
-  // m_tableIssuesModel->getIssue(0, &issue);
-  m_issueActivityDialog->updateDetails(issue);
-
-  float time = m_stopTime.toTime_t() - m_startTime.toTime_t();
-  m_issueActivityDialog->updateTimeSpent(time);
-
-  m_issueActivityDialog->show();
-
-  // Swap the buttons out.
-  m_startButton->show();
-  m_stopButton->hide();
-
-  m_issuesTable->setEnabled(true);
 }
 
 void MainWindow::onDataLoaderProgress(int current, int max) {
@@ -278,10 +207,8 @@ void MainWindow::onDataLoaderFinished() {
   m_dataLoader->swapIssues(&Data::Get().issues);
 
   int totalIssues = Data::Get().issues.count();
-  for (int idx = 0; idx < totalIssues; ++idx) {
-    if (m_tableIssuesModel->insertIssue(Data::Get().issues.at(idx)))
-      int i = 10;
-  }
+  for (int idx = 0; idx < totalIssues; ++idx)
+    m_tableIssuesModel->insertIssue(Data::Get().issues.at(idx));
 
   if (totalIssues > 0) {
     emit onDataLoaded();
@@ -306,13 +233,6 @@ void MainWindow::onActiveIssueWidgetTrackingCompleted() {
   m_activeIssueWidget->hide();
 }
 
-void MainWindow::onIssueListTimerTimeout() { onUpdateButtonClicked(); }
-
-void MainWindow::onIssuesListCurrentChanged(const QModelIndex& current,
-                                            const QModelIndex& previous) {
-  qDebug() << current;
-}
-
 void MainWindow::onSelectIssue(const QModelIndex& selection) {
   qDebug() << selection.row();
   m_issuesTable->selectRow(selection.row());
@@ -333,20 +253,4 @@ void MainWindow::stopTimer() {
     qDebug() << "Stopping timer";
     m_issueListTimer->stop();
   }
-}
-
-void MainWindow::startTrackingTime(int issueId) {
-  qDebug() << "Tracking time for:" << issueId;
-
-  m_startTime = QDateTime::currentDateTime();
-
-  m_isTrackingTime = true;
-}
-
-void MainWindow::stopTrackingTime() {
-  qDebug() << "Stop tracking time";
-
-  m_stopTime = QDateTime::currentDateTime();
-
-  m_isTrackingTime = false;
 }

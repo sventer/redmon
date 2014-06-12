@@ -36,65 +36,67 @@ IssuesTableModel::IssuesTableModel(QObject* parent)
 }
 
 int IssuesTableModel::rowCount(const QModelIndex& parent) const {
-	if (parent.isValid())
-		return 0;
+  if (parent.isValid())
+    return 0;
 
   return _issues.size();
 
-	//return Data::Get().issues.size();
+  // return Data::Get().issues.size();
 }
 
 int IssuesTableModel::columnCount(const QModelIndex& parent) const {
-	if (parent.isValid())
-		return 0;
+  if (parent.isValid())
+    return 0;
 
-	// the number of columns in our model that will be displayed.
-	return 5;
+  // the number of columns in our model that will be displayed.
+  return 5;
 }
 
 QVariant IssuesTableModel::data(const QModelIndex& index, int role) const {
-	if (index.row() < 0 || index.row() > Data::Get().issues.size())
-		return QVariant();
+  if (index.row() < 0 || index.row() > Data::Get().issues.size())
+    return QVariant();
 
-	const Issue& issue = _issues.at(index.row());
+  const Issue& issue = _issues.at(index.row());
 
-	//qDebug() << "table column number [" << QString::number(index.column()) << "]";
+  // qDebug() << "table column number [" << QString::number(index.column()) <<
+  // "]";
 
-	switch (index.column()) {
-	case 0:
-		return QString::number(issue.id);
-	case 1:
-		return issue.priorityName;
-	case 2:
-		return issue.hoursSpent;
-	case 3:
-		return issue.projectName;
-	case 4:
-		return issue.subject;
-	}
+  switch (index.column()) {
+  case 0:
+    return QString::number(issue.id);
+  case 1:
+    return issue.priorityName;
+  case 2:
+    return issue.hoursSpent;
+  case 3:
+    return issue.projectName;
+  case 4:
+    return issue.subject;
+  }
 
-	return QVariant();
+  return QVariant();
 }
 
-QVariant IssuesTableModel::headerData(int section, Qt::Orientation orientation, int role) const {
-	if (role == Qt::DisplayRole) {
-		if (orientation == Qt::Horizontal) {
-			switch (section) {
-			case 0:
-				return QString("Id");
-			case 1:
-				return QString("Priority");
-			case 2:
-				return QString("Hours Spent");
-			case 3:
-				return QString("Project");
-			case 4:
-				return QString("Subject");
-			}
-		}
-	}
+QVariant IssuesTableModel::headerData(int section, Qt::Orientation orientation,
+                                      int role) const {
+  if (role == Qt::DisplayRole) {
+    if (orientation == Qt::Horizontal) {
+      switch (section) {
+      case 0:
+        return QString("Id");
+      case 1:
+        return QString("Priority");
+      case 2:
+        return QString("Hours Spent");
+      case 3:
+        return QString("Project");
+      case 4:
+        return QString("Subject");
+      }
+    }
+  }
 
-	return QVariant();
+  return QVariant();
 }
 
 const Issue& IssuesTableModel::issue(const QModelIndex& index) const {
@@ -116,13 +118,17 @@ bool IssuesTableModel::insertIssue(const Issue& issue) {
 }
 
 bool IssuesTableModel::getIssue(int row, Issue* issue) {
-  if (row <= _issues.size())
+  if (row >= 0 && row < _issues.size()) {
     *issue = _issues.at(row);
-  return true;
+    return true;
+  }
+
+  return false;
 }
 
 bool IssuesTableModel::containsIssue(int issueId) {
-  for (QVector<Issue>::iterator bi = _issues.begin(), ei = _issues.end(); bi != ei; ++bi) {
+  for (QVector<Issue>::iterator bi = _issues.begin(), ei = _issues.end();
+       bi != ei; ++bi) {
     Issue issue = *bi;
     if (issue.id == issueId)
       return true;

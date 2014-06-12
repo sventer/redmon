@@ -34,6 +34,7 @@
 #include <QTimer>
 #include <QVBoxLayout>
 
+#include "data/activities_data_loader.h"
 #include "data/data.h"
 #include "data/utils.h"
 #include "models/time_activities_model.h"
@@ -86,6 +87,12 @@ ActiveIssueWidget::ActiveIssueWidget(QWidget* parent) : QWidget(parent) {
   mainLayout->addLayout(rightLayout, 1);
 
   setLayout(mainLayout);
+
+  // Start the process of loading the time entry activities.
+  m_activitiesDataLoader = new ActivitiesDataLoader(this);
+  connect(m_activitiesDataLoader, SIGNAL(finished()), this,
+          SLOT(onActivitiesDataLoaderFinished()));
+  m_activitiesDataLoader->loadData();
 }
 
 ActiveIssueWidget::~ActiveIssueWidget() {}
@@ -177,9 +184,19 @@ void ActiveIssueWidget::onNamFinished(QNetworkReply* reply) {
     m_timeEntryActivityCombo->setEnabled(true);
     m_cancelButton->setEnabled(true);
     m_stopButton->setEnabled(true);
-
-    // Also start the timer again.
   }
+}
+
+void ActiveIssueWidget::onActivitiesDataLoaderFinished() {
+  qDebug() << "refresh";
+
+  // Swap the data into the global store.
+  m_activitiesDataLoader->swapTimeEntryActivities(
+      &Data::Get().timeEntryActivities);
+
+  TimeEntryActivitiesModel* model =
+      static_cast<TimeEntryActivitiesModel*>(m_timeEntryActivityCombo->model());
+  model->refresh();
 }
 
 void ActiveIssueWidget::resetValues() {

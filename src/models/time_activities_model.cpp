@@ -28,6 +28,11 @@ TimeEntryActivitiesModel::TimeEntryActivitiesModel(QObject* parent)
 
 TimeEntryActivitiesModel::~TimeEntryActivitiesModel() {}
 
+void TimeEntryActivitiesModel::refresh(){
+  beginResetModel();
+  endResetModel();
+}
+
 int TimeEntryActivitiesModel::rowCount(const QModelIndex& parent) const {
   return Data::Get().timeEntryActivities.size();
 }

@@ -31,6 +31,10 @@ public:
   explicit TimeEntryActivitiesModel(QObject* parent = 0);
   virtual ~TimeEntryActivitiesModel();
 
+  // Tell the model to retrieve the data again.
+  void refresh();
+
+  // Override: QAbstractListModel
   int rowCount(const QModelIndex& parent = QModelIndex()) const override;
   QVariant data(const QModelIndex& index,
                 int role = Qt::DisplayRole) const override;

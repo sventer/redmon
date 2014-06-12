@@ -41,7 +41,6 @@ class QTableView;
 class ActiveIssueWidget;
 class DataLoader;
 class IssuesTableModel;
-class IssueActivityDialog;
 class IssuesTableView;
 
 class MainWindow : public QWidget {
@@ -50,8 +49,6 @@ class MainWindow : public QWidget {
 public:
   explicit MainWindow(QWidget* parent = 0);
   virtual ~MainWindow();
-
-  virtual void showEvent(QShowEvent* event) override;
 
 signals:
   void onDataLoaded();
@@ -64,30 +61,22 @@ private slots:
   void onSettingsButtonClicked();
   void onUpdateButtonClicked();
   void onStartButtonClicked();
-  void onStopButtonClicked();
 
   void onDataLoaderProgress(int current, int max);
   void onDataLoaderFinished();
 
   void onActiveIssueWidgetTrackingCompleted();
 
-  void onIssueListTimerTimeout();
-  void onIssuesListCurrentChanged(const QModelIndex& current,
-                                  const QModelIndex& previous);
   void onSelectIssue(const QModelIndex& slection);
 
 private:
   void startTimer();
   void stopTimer();
 
-  void startTrackingTime(int issueId);
-  void stopTrackingTime();
-
   // Controls.
   QPushButton* m_settingsButton;
   QPushButton* m_updateButton;
   QPushButton* m_startButton;
-  QPushButton* m_stopButton;
 
   QProgressBar* m_progressBar;
 
@@ -100,14 +89,6 @@ private:
 
   // The timer we use to update the issue list.
   QTimer* m_issueListTimer;
-
-  // Set to true if we are currently tracking time.
-  bool m_isTrackingTime;
-
-  // have we been shown before?
-  bool m_isInitializeDone;
-
-  IssueActivityDialog* m_issueActivityDialog;
 
   // The widget that display's the current active issue.
   ActiveIssueWidget* m_activeIssueWidget;
