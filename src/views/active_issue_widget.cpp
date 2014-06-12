@@ -39,7 +39,7 @@
 #include "data/utils.h"
 #include "models/time_activities_model.h"
 
-ActiveIssueWidget::ActiveIssueWidget(QWidget* parent) : QWidget(parent) {
+ActiveIssueWidget::ActiveIssueWidget(QWidget* parent) : QWidget(parent), m_currentIssueId(-1) {
   // Create the NAM.
   m_nam = new QNetworkAccessManager(this);
   connect(m_nam, SIGNAL(finished(QNetworkReply*)), this,

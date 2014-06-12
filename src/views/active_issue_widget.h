@@ -82,7 +82,7 @@ private:
 
   // The ID of the issue we are currently tracking.  -1 if no issue is being
   // tracked.
-  int m_currentIssueId = -1;
+  int m_currentIssueId;
 
   // The amount of time that has elapsed since we started tracking the issue.
   QTime m_elapsedTime;
