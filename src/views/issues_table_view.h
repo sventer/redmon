@@ -19,8 +19,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef ISSUES_TABLE_VIEW
-#define ISSUES_TABLE_VIEW
+#ifndef VIEWS_ISSUES_TABLE_VIEW_H_
+#define VIEWS_ISSUES_TABLE_VIEW_H_
 
 #include <QTableView>
 #include <QItemSelectionModel>
@@ -36,13 +36,20 @@ class IssuesTableView : public QTableView {
   Q_OBJECT
 
 public:
-  IssuesTableView(QWidget* parent = 0);
+  explicit IssuesTableView(QWidget* parent = 0);
 
   int selectedRow() const { return m_selectedRow; }
 
+  void setModel(QAbstractItemModel* model);
+
 public slots:
-  virtual void currentChanged(const QModelIndex& current, const QModelIndex& previous) override;
+  virtual void currentChanged(const QModelIndex& current,
+                              const QModelIndex& previous) override;
   void setInitialSelection();
+
+private slots:
+  void onHorizontalHeaderSectionResized(int logicalIndex, int oldSize,
+                                        int newSize);
 
 private:
   void storeCurrentSelection();
@@ -52,4 +59,4 @@ private:
   int m_selectedIssueId;
 };
 
-#endif  // ISSUES_TABLE_VIEW
+#endif  // VIEWS_ISSUES_TABLE_VIEW_H_

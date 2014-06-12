@@ -21,19 +21,31 @@
 
 #include "views/issues_table_view.h"
 
+#include <QDebug>
+#include <QHeaderView>
+
 #include "models/issues_table_model.h"
-
-
+#include "config.h"
 
 IssuesTableView::IssuesTableView(QWidget* parent)
-: QTableView(parent), m_selectedRow(-1), m_selectedIssueId(0) {
+  : QTableView(parent), m_selectedRow(-1), m_selectedIssueId(0) {
   setSelectionMode(SingleSelection);
   setSelectionBehavior(SelectRows);
+
+  connect(horizontalHeader(), SIGNAL(sectionResized(int, int, int)), this,
+          SLOT(onHorizontalHeaderSectionResized(int, int, int)));
 }
 
-void IssuesTableView::currentChanged(const QModelIndex& current, const QModelIndex& previous) {
+void IssuesTableView::setModel(QAbstractItemModel* model) {
+  QTableView::setModel(model);
+
+  // TODO: Set the column sizes from what we saved.
+}
+
+void IssuesTableView::currentChanged(const QModelIndex& current,
+                                     const QModelIndex& previous) {
   Q_UNUSED(previous);
-  
+
   selectRow(current.row());
 
   storeCurrentSelection();
@@ -51,8 +63,16 @@ void IssuesTableView::setInitialSelection() {
   currentChanged(model()->index(m_selectedRow, 0), QModelIndex());
 }
 
-// we store the issue id so that when the tabelis recreated we can highlight the correct issue again
-// the row indication may cahnage depending on if additional issues were added or deleted.
+void IssuesTableView::onHorizontalHeaderSectionResized(int logicalIndex,
+                                                       int oldSize,
+                                                       int newSize) {
+  // TODO: Save the new column size.
+}
+
+// we store the issue id so that when the tabelis recreated we can highlight the
+// correct issue again
+// the row indication may cahnage depending on if additional issues were added
+// or deleted.
 void IssuesTableView::storeCurrentSelection() {
   QModelIndex currentIndex(QTableView::currentIndex());
   IssuesTableModel* tableModel = static_cast<IssuesTableModel*>(model());

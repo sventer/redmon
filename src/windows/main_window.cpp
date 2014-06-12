@@ -102,7 +102,8 @@ MainWindow::MainWindow(QWidget* parent)
   m_issuesTable->setFrameShape(QFrame::NoFrame);
   m_issuesTable->setItemDelegate(new IssueTableItemDelegate);
   m_issuesTable->horizontalHeader()->setSectionResizeMode(
-      QHeaderView::ResizeToContents);
+    QHeaderView::Interactive);
+  m_issuesTable->horizontalHeader()->setStretchLastSection(true);
   m_issuesTable->verticalHeader()->hide();
   m_issuesTable->setModel(m_tableIssuesModel);
   connect(m_issuesTable, SIGNAL(clicked(QModelIndex)), this,
