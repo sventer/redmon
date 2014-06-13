@@ -21,6 +21,8 @@
 
 #include "data/data_loader.h"
 
+#include <cmath>
+
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QSettings>
@@ -37,8 +39,7 @@ DataLoader::DataLoader(QObject* parent) : QObject(parent) {
           SLOT(onIssuesManagerReply(QNetworkReply*)));
 }
 
-DataLoader::~DataLoader() {
-}
+DataLoader::~DataLoader() {}
 
 void DataLoader::loadData() {
   qDebug() << "DataLoader::loadData()";
@@ -77,7 +78,7 @@ void DataLoader::onIssuesManagerReply(QNetworkReply* reply) {
     m_currentProgress = 1;
     // Set the max progress.
     m_maxProgress = static_cast<int>(
-        ceil(static_cast<float>(totalCount) / static_cast<float>(limit)));
+        std::ceil(static_cast<float>(totalCount) / static_cast<float>(limit)));
 
     emit progress(m_currentProgress, m_maxProgress);
   }
@@ -191,10 +192,9 @@ QString DataLoader::buildTimeEntryActivitiesURL() {
     userUrl = settings.value("serverUrl").toString();
 
   QString url(
-    "http://%1/enumerations/time_entry_activities.xml?"
-    "key=%2");
-  url = url.arg(userUrl)
-    .arg(settings.value("apiKey").toString());
+      "http://%1/enumerations/time_entry_activities.xml?"
+      "key=%2");
+  url = url.arg(userUrl).arg(settings.value("apiKey").toString());
 
   qDebug() << url;
 
