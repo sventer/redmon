@@ -35,6 +35,8 @@ IssuesTableView::IssuesTableView(QWidget* parent)
   : QTableView(parent), m_selectedRow(-1), m_selectedIssueId(0) {
   setSelectionMode(SingleSelection);
   setSelectionBehavior(SelectRows);
+  horizontalHeader()->setStretchLastSection(true);
+  verticalHeader()->hide();
 
   connect(horizontalHeader(), SIGNAL(sectionResized(int, int, int)), this,
           SLOT(onHorizontalHeaderSectionResized(int, int, int)));
@@ -58,10 +60,12 @@ void IssuesTableView::currentChanged(const QModelIndex& current,
                                      const QModelIndex& previous) {
   Q_UNUSED(previous);
 
+#if 0
   selectRow(current.row());
 
   storeCurrentSelection();
   m_selectedRow = current.row();
+#endif  // 0
 }
 
 void IssuesTableView::setInitialSelection() {

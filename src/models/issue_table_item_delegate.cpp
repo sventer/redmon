@@ -32,89 +32,94 @@ const int kItemBorderSize = 5;
 const int kTextSpacing = 1;
 
 IssueTableItemDelegate::IssueTableItemDelegate(QObject* parent)
-: QStyledItemDelegate(parent) {
-}
+  : QStyledItemDelegate(parent) {}
 
-IssueTableItemDelegate::~IssueTableItemDelegate() {
-}
+IssueTableItemDelegate::~IssueTableItemDelegate() {}
 
-void IssueTableItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const {
-	painter->save();
+void IssueTableItemDelegate::paint(QPainter* painter,
+                                   const QStyleOptionViewItem& option,
+                                   const QModelIndex& index) const {
+  painter->save();
 
-	if (option.showDecorationSelected && (option.state & QStyle::State_Selected)) {
-		painter->fillRect(option.rect, QColor(200, 247, 250));
+  if (option.showDecorationSelected &&
+      (option.state & QStyle::State_Selected)) {
+    painter->fillRect(option.rect, QColor(200, 247, 250));
     drawText(painter, option, index);
   } else {
-		painter->fillRect(option.rect, QColor(255, 255, 255));
+    painter->fillRect(option.rect, QColor(255, 255, 255));
     drawText(painter, option, index);
-	}
+  }
+
+  painter->restore();
 }
 
-QSize IssueTableItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const {
-	QFontMetrics metrics(getIdTextFont(option.font));
+QSize IssueTableItemDelegate::sizeHint(const QStyleOptionViewItem& option,
+                                       const QModelIndex& index) const {
+  QFontMetrics metrics(getIdTextFont(option.font));
 
-	QString colStr = index.data().toString();
+  QString colStr = index.data().toString();
 
-	return (QSize(metrics.width(colStr) + (metrics.width('Q') * 2), metrics.height() + 5));
+  return (QSize(metrics.width(colStr) + (metrics.width('Q') * 2),
+                metrics.height() + 5));
 }
 
-const Issue& IssueTableItemDelegate::issueFromIndex(const QModelIndex& index) const {
-	const IssuesTableModel* model = static_cast<const IssuesTableModel*>(index.model());
-	return model->issue(index);
+const Issue& IssueTableItemDelegate::issueFromIndex(
+    const QModelIndex& index) const {
+  const IssuesTableModel* model =
+      static_cast<const IssuesTableModel*>(index.model());
+  return model->issue(index);
 }
 
 QFont IssueTableItemDelegate::getIdTextFont(const QFont& font) {
-	QFont result(font);
-	result.setPixelSize(12);
-	result.setBold(false);
-	return result;
+  QFont result(font);
+  result.setPixelSize(12);
+  result.setBold(false);
+  return result;
 }
 
-void IssueTableItemDelegate::drawText(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const {
-	const Issue& issue = issueFromIndex(index);
+void IssueTableItemDelegate::drawText(QPainter* painter,
+                                      const QStyleOptionViewItem& option,
+                                      const QModelIndex& index) const {
+  const Issue& issue = issueFromIndex(index);
 
-	QRect textRect;
+  QRect textRect;
 
-	QPen darkGrayPen(QColor(0, 0, 0));
-	QBrush backgroundBrush(QColor(200, 247, 250));
+  QPen darkGrayPen(QColor(0, 0, 0));
+  QBrush backgroundBrush(QColor(200, 247, 250));
 
-	QRect drawRect = option.rect;
+  QRect drawRect = option.rect;
 
-	//painter->setPen(QPen(Qt::NoPen));
+  // painter->setPen(QPen(Qt::NoPen));
 
-	drawRect.adjust(kItemBorderSize, kItemBorderSize, -kItemBorderSize, -kItemBorderSize);
+  drawRect.adjust(kItemBorderSize, kItemBorderSize, -kItemBorderSize,
+                  -kItemBorderSize);
 
-	switch (index.column()) {
-	case 0:  // this is the issue id
-		painter->setPen(darkGrayPen);
-		painter->setFont(getIdTextFont(option.font));
-		painter->drawText(drawRect, Qt::AlignLeft, QString::number(issue.id));
-		break;
-	case 1:  // this is the project description
-		painter->setPen(darkGrayPen);
-		painter->setFont(getIdTextFont(option.font));
-		painter->drawText(drawRect, Qt::AlignLeft, issue.priorityName);
-		break;
-	case 2:  // this is the project description
-		painter->setPen(darkGrayPen);
-		painter->setFont(getIdTextFont(option.font));
-		painter->drawText(drawRect, Qt::AlignLeft, QString::number(issue.hoursSpent, 'f', 2));
-		break;
-	case 3:  // this is the project description
-		painter->setPen(darkGrayPen);
-		painter->setFont(getIdTextFont(option.font));
-		painter->drawText(drawRect, Qt::AlignLeft, issue.projectName);
-		break;
-	case 4:  // this is the subject
-		painter->setPen(darkGrayPen);
-		painter->setFont(getIdTextFont(option.font));
-		painter->drawText(drawRect, Qt::AlignLeft, issue.subject);
-		break;
-	}
+  switch (index.column()) {
+  case 0:  // this is the issue id
+    painter->setPen(darkGrayPen);
+    painter->setFont(getIdTextFont(option.font));
+    painter->drawText(drawRect, Qt::AlignLeft, QString::number(issue.id));
+    break;
+  case 1:  // this is the project description
+    painter->setPen(darkGrayPen);
+    painter->setFont(getIdTextFont(option.font));
+    painter->drawText(drawRect, Qt::AlignLeft, issue.priorityName);
+    break;
+  case 2:  // this is the project description
+    painter->setPen(darkGrayPen);
+    painter->setFont(getIdTextFont(option.font));
+    painter->drawText(drawRect, Qt::AlignLeft,
+                      QString::number(issue.hoursSpent, 'f', 2));
+    break;
+  case 3:  // this is the project description
+    painter->setPen(darkGrayPen);
+    painter->setFont(getIdTextFont(option.font));
+    painter->drawText(drawRect, Qt::AlignLeft, issue.projectName);
+    break;
+  case 4:  // this is the subject
+    painter->setPen(darkGrayPen);
+    painter->setFont(getIdTextFont(option.font));
+    painter->drawText(drawRect, Qt::AlignLeft, issue.subject);
+    break;
+  }
 }
-
-#if 0
-QString IssueTableItemDelegate::getInfoLineText(const Issue& issue) {
-
-}
-#endif  // 0

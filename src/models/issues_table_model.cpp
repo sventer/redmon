@@ -28,58 +28,57 @@
 
 #include "data/data.h"
 
-namespace issues {
-  bool sortModelData(Issue a, Issue b) {
-    return a.priorityId > b.priorityId;
-  }
-}
+namespace {
+
+enum Columns {
+  COLUMN_ID,
+  COLUMN_PRIORITY,
+  COLUMN_HOURS,
+  COLUMN_PROJECT,
+  COLUMN_SUBJECT,
+  COLUMN_COUNT,
+};
+
+}  // namespace
 
 IssuesTableModel::IssuesTableModel(QObject* parent)
-  : QAbstractTableModel(parent) {
-  if (Data::Get().issues.count() >= 1) {
-    for (int idx = 0; idx < Data::Get().issues.count(); ++idx) {
-      _issues.push_back(Data::Get().issues.at(idx));
-    }
-  }
-}
+  : QAbstractTableModel(parent) {}
 
 int IssuesTableModel::rowCount(const QModelIndex& parent) const {
-  if (parent.isValid())
-    return 0;
-
-  return _issues.size();
-
-  // return Data::Get().issues.size();
+  return m_issues.size();
 }
 
 int IssuesTableModel::columnCount(const QModelIndex& parent) const {
-  if (parent.isValid())
-    return 0;
-
-  // the number of columns in our model that will be displayed.
-  return 5;
+  return COLUMN_COUNT;
 }
 
 QVariant IssuesTableModel::data(const QModelIndex& index, int role) const {
-  if (index.row() < 0 || index.row() > Data::Get().issues.size())
+  if (!index.isValid())
     return QVariant();
 
-  const Issue& issue = _issues.at(index.row());
+  if (index.row() < 0 || index.row() >= m_issues.size())
+    return QVariant();
 
-  // qDebug() << "table column number [" << QString::number(index.column()) <<
-  // "]";
+  const Issue& issue = m_issues.at(index.row());
 
   switch (index.column()) {
-  case 0:
-    return QString::number(issue.id);
-  case 1:
+  case COLUMN_ID:
+    return issue.id;
+
+  case COLUMN_PRIORITY:
     return issue.priorityName;
-  case 2:
+
+  case COLUMN_HOURS:
     return issue.hoursSpent;
-  case 3:
+
+  case COLUMN_PROJECT:
     return issue.projectName;
-  case 4:
+
+  case COLUMN_SUBJECT:
     return issue.subject;
+
+  default:
+    Q_UNREACHABLE();
   }
 
   return QVariant();
@@ -87,20 +86,20 @@ QVariant IssuesTableModel::data(const QModelIndex& index, int role) const {
 
 QVariant IssuesTableModel::headerData(int section, Qt::Orientation orientation,
                                       int role) const {
-  if (role == Qt::DisplayRole) {
-    if (orientation == Qt::Horizontal) {
-      switch (section) {
-      case 0:
-        return QString("Id");
-      case 1:
-        return QString("Priority");
-      case 2:
-        return QString("Hours Spent");
-      case 3:
-        return QString("Project");
-      case 4:
-        return QString("Subject");
-      }
+  if (role == Qt::DisplayRole && orientation == Qt::Horizontal) {
+    switch (section) {
+    case COLUMN_ID:
+      return QString("Id");
+    case COLUMN_PRIORITY:
+      return QString("Priority");
+    case COLUMN_HOURS:
+      return QString("Hours Spent");
+    case COLUMN_PROJECT:
+      return QString("Project");
+    case COLUMN_SUBJECT:
+      return QString("Subject");
+    default:
+      Q_UNREACHABLE();
     }
   }
 
@@ -108,38 +107,44 @@ QVariant IssuesTableModel::headerData(int section, Qt::Orientation orientation,
 }
 
 const Issue& IssuesTableModel::issue(const QModelIndex& index) const {
-  return _issues.at(index.row());
+  return m_issues.at(index.row());
 }
 
 bool IssuesTableModel::insertIssue(const Issue& issue) {
-  if (!containsIssue(issue.id)) {
-    beginInsertRows(QModelIndex(), 0, 0);
+  // Find the location where the new issue should go.
+  auto insertLoc = std::lower_bound(m_issues.begin(), m_issues.end(), issue);
 
-    _issues.push_back(issue);
+  // Find the index where the new item is going to be inserted or updated.
+  auto distance = std::distance(m_issues.begin(), insertLoc);
 
+  // If the first item we found is the same as the issue, we just update the
+  // issue.
+  if (insertLoc->id == issue.id) {
+    beginResetModel();
+    *insertLoc = issue;
+    endResetModel();
+  } else {
+    beginInsertRows(QModelIndex(), distance, distance);
+    m_issues.insert(insertLoc, issue);
     endInsertRows();
-
-    return true;
   }
 
-  return false;
+  return true;
 }
 
-void IssuesTableModel::sortData() {
-  std::sort(_issues.begin(), _issues.end(), issues::sortModelData);
-}
+void IssuesTableModel::insertIssues(const QVector<Issue>& issues) {
+  // The list of issues MUST be sorted here, but Qt doesn't have a nice
+  // algorithm to check that.
+  Q_ASSERT(std::is_sorted(issues.begin(), issues.end()));
 
-bool IssuesTableModel::getIssue(int row, Issue* issue) {
-  if (row >= 0 && row < _issues.size()) {
-    *issue = _issues.at(row);
-    return true;
-  }
-
-  return false;
+  // For now we just go through all the issues and insert/update them as we go.
+  // This needs optimization.
+  for (const auto& issue : issues)
+    insertIssue(issue);
 }
 
 bool IssuesTableModel::containsIssue(int issueId) {
-  for (QVector<Issue>::iterator bi = _issues.begin(), ei = _issues.end();
+  for (QVector<Issue>::iterator bi = m_issues.begin(), ei = m_issues.end();
        bi != ei; ++bi) {
     Issue issue = *bi;
     if (issue.id == issueId)

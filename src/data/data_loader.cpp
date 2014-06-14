@@ -33,31 +33,30 @@
 #include "data/utils.h"
 #include "models/time_activities_model.h"
 
-DataLoader::DataLoader(QObject* parent) : QObject(parent) {
-  m_issuesManager = new QNetworkAccessManager(this);
-  connect(m_issuesManager, SIGNAL(finished(QNetworkReply*)), this,
-          SLOT(onIssuesManagerReply(QNetworkReply*)));
+namespace {
+
+// The maximum number of items we pull per page.  The maximum in Redmine is 100.
+const int kPageLimit = 100;
+
+}  // namespace
+
+DataLoader::DataLoader(QObject* parent)
+  : QObject(parent), m_network(new QNetworkAccessManager(this)) {
+  connect(m_network, SIGNAL(finished(QNetworkReply*)), this,
+          SLOT(onNetworkFinished(QNetworkReply*)));
 }
 
 DataLoader::~DataLoader() {}
 
 void DataLoader::loadData() {
-  qDebug() << "DataLoader::loadData()";
-
   // Clear the issues we have in the list already.
   m_issues.clear();
 
   // Start the load process.
-  startLoadIssues();
+  startLoadingIssues();
 }
 
-void DataLoader::swapIssues(QVector<Issue>* issues) { issues->swap(m_issues); }
-
-void DataLoader::onIssuesManagerReply(QNetworkReply* reply) {
-  qDebug() << "DataLoader::onIssuesManagerReply";
-  qDebug() << "DataLoader::onIssuesManagerReply bytes receiced ["
-           << QString::number(reply->bytesAvailable()) << "]";
-
+void DataLoader::onNetworkFinished(QNetworkReply* reply) {
   QByteArray data(reply->read(reply->bytesAvailable()));
 
   // Create the XML document.
@@ -72,21 +71,28 @@ void DataLoader::onIssuesManagerReply(QNetworkReply* reply) {
   int limit = -1;
   loadCountersFromElement(&root, &totalCount, &offset, &limit);
 
-  // If this is the first page we receive, update the max progress.
-  if (offset == 0) {
-    // We loaded one page.
-    m_currentProgress = 1;
-    // Set the max progress.
-    m_maxProgress = static_cast<int>(
-        std::ceil(static_cast<float>(totalCount) / static_cast<float>(limit)));
-
-    emit progress(m_currentProgress, m_maxProgress);
-  }
-
   if (root.tagName() == "issues") {
-    // We put a check in here to see if nothing was added to the issues list,
-    // just so we never go into a neverending loop.
-    size_t issuesBefore = m_issues.size();
+    // If we receive the first issues page back, we can calculate the total
+    // number of pages we're going to load.
+    if (offset == 0) {
+      // We did the first piece of work.
+      m_currentProgress = 1;
+
+      // Set the max progress to the total number of issues pages we must load.
+      m_maxProgress = (totalCount - (totalCount % limit)) / limit +
+                      ((totalCount % limit) ? 1 : 0);
+
+      // Add the total number of time entry pages we must load.  Assuming for
+      // now that we will only load one per issue.
+      m_maxProgress += totalCount;
+
+      // We know how many issues we're going to add, so let's reserver some
+      // space in the vector.
+      m_issues.reserve(totalCount);
+    } else {
+      // We did another piece of work.
+      ++m_currentProgress;
+    }
 
     // Add the new issues to the current list of issues.
     for (QDomElement issueElem = root.firstChildElement("issue");
@@ -96,107 +102,108 @@ void DataLoader::onIssuesManagerReply(QNetworkReply* reply) {
       Issue issue;
       updateIssueFromXml(issueElem, &issue);
 
-      // We're going to do another item of work, so increase the max progress.
-      ++m_maxProgress;
-      emit progress(m_currentProgress, m_maxProgress);
+      // Add the issue to our internal list of issues in a sorted manner.
+      m_issues.insert(qLowerBound(m_issues.begin(), m_issues.end(), issue),
+                      issue);
 
-      // Create a loader for the time entries.
-      TimeEntryLoader* loader = new TimeEntryLoader(issue, this);
-      loader->connect(loader, SIGNAL(finished(TimeEntryLoader*)), this,
-                      SLOT(onTimeEntryLoaderFinished(TimeEntryLoader*)));
-      Q_ASSERT(!m_timeEntryLoaders.contains(issue.id));
-      m_timeEntryLoaders[issue.id] = loader;
-      loader->load();
+      // Start loading time entries for this issue.
+      startLoadingTimeEntries(issue.id, 0);
     }
+
+    // We're updated the max progress, so let everyone know.
+    emit progress(m_currentProgress, m_maxProgress);
 
     // If there were issues added and we haven't reached the limit yet, request
     // another batch of issues.
-    if (m_issues.size() != issuesBefore && totalCount >= 0 &&
-        m_issues.size() < totalCount) {
-      startLoadIssues(offset + limit);
+    if (offset + limit < totalCount)
+      startLoadingIssues(offset + limit);
+  } else if (root.tagName() == "time_entries") {
+    // If this issue's time entries span more than one page, we have to update
+    // the max progress.
+    if (offset == 0 && totalCount > limit) {
+      // We have to subtract one from the total pages, because this one is
+      // already done.
+      int moreWorkToDo = (totalCount - (totalCount % limit)) / limit +
+                         ((totalCount % limit) ? 1 : 0) - 1;
+      m_maxProgress += moreWorkToDo;
     }
+
+    // Keep track of the issue id we're counting hours for.
+    int issueId = -1;
+
+    for (QDomElement timeEntryElem = root.firstChildElement("time_entry");
+         !timeEntryElem.isNull();
+         timeEntryElem = timeEntryElem.nextSiblingElement("time_entry")) {
+      TimeEntry timeEntry;
+      updateTimeEntryFromXml(timeEntryElem, &timeEntry);
+
+      // Set the issueId, or make sure it's the same one.
+      if (issueId == -1) {
+        issueId = timeEntry.issueId;
+      } else {
+        Q_ASSERT(issueId == timeEntry.issueId);
+      }
+
+      // Find the issue we are updating and update it's hours.
+      auto it = qFind(m_issues.begin(), m_issues.end(), timeEntry.issueId);
+      if (it != m_issues.end()) {
+        it->hoursSpent += timeEntry.hours;
+      } else {
+        Q_UNREACHABLE();
+      }
+    }
+
+    // We processed a page, so update the progress.
+    ++m_currentProgress;
+    emit progress(m_currentProgress, m_maxProgress);
+
+    // If there are more time entries to load, load them now.
+    if (offset + limit < totalCount)
+      startLoadingTimeEntries(issueId, offset + limit);
   }
-}
 
-void DataLoader::onTimeEntryLoaderFinished(TimeEntryLoader* loader) {
-  Q_ASSERT(loader);
-
-  // If a time entry came back, then we've completed a piece of work.  So update
-  // the progress.
-  ++m_currentProgress;
-  emit progress(m_currentProgress, m_maxProgress);
-
-  // Find the loader in the list.
-  TimeEntryLoadersType::iterator it =
-      m_timeEntryLoaders.find(loader->issue().id);
-  Q_ASSERT(it != m_timeEntryLoaders.end());
-
-  // Add the issue to the issues list.
-  m_issues.append(loader->issue());
-
-  // Remove the loader from the list.
-  m_timeEntryLoaders.erase(it);
-
-  // delete loader;
-
-  // If the m_timeEntryLoader list is empty, it means all the issues were
-  // updated, so we can finish the process.
-  if (m_timeEntryLoaders.empty()) {
+  // If the progress reached the end, then we're done.
+  if (m_currentProgress == m_maxProgress)
     emit finished();
-  }
 }
 
-void DataLoader::startLoadIssues(int offset) {
-  QNetworkRequest request(buildIssuesUrl(offset));
-
+void DataLoader::startLoadingIssues(int offset) {
   QSettings settings;
+
+  QString url("%1?&limit=%2&offset=%3&sort=priority");
+  url = url.arg(buildServerUrl("/issues.xml")).arg(kPageLimit).arg(offset);
+
+  // Only show our own issues.
+  if (settings.value("onlyMyIssues", true).toBool())
+    url.append("&assigned_to_id=me");
+
+  QNetworkRequest request(url);
   request.setRawHeader("X-Redmine-API-Key",
                        settings.value("apiKey").toString().toLatin1());
 
   qDebug() << "Requesting:" << request.url();
-  m_issuesManager->get(request);
+
+  m_network->get(request);
 }
 
-// static
-QString DataLoader::buildIssuesUrl(int offset) {
+void DataLoader::startLoadingTimeEntries(int issueId, int offset) {
   QSettings settings;
 
-  // if the user specified the protocol as part of the url remove the protocol
-  QString userUrl = settings.value("serverUrl").toString();
-  if (settings.value("serverUrl").toString().startsWith("http://"))
-    userUrl = settings.value("serverUrl").toString().split("//")[1];
-  else
-    userUrl = settings.value("serverUrl").toString();
+  QString url("%1?limit=%2&offset=%3&issue_id=%4");
+  url = url.arg(buildServerUrl("/time_entries.xml"))
+            .arg(kPageLimit)
+            .arg(offset)
+            .arg(issueId);
 
-  QString url(
-      "http://%1/issues.xml?"
-      "&limit=100&offset=%2&sort=priority:desc,id:desc");
-  url = url.arg(userUrl).arg(offset);
+  // Only add time entries that i made.
+  if (settings.value("onlyMyTimeEntries", false).toBool())
+    url.append("&user_id=me");
 
-  if (settings.value("onlyMyIssues", true).toBool()) {
-    // Only show our own issues.
-    url.append("&assigned_to_id=me");
-  }
+  QNetworkRequest request(url);
+  request.setRawHeader("X-Redmine-API-Key",
+                       settings.value("apiKey").toString().toLatin1());
 
-  return url;
-}
+  qDebug() << "Requesting:" << request.url();
 
-QString DataLoader::buildTimeEntryActivitiesURL() {
-  QSettings settings;
-
-  // if the user specified the protocol as part of the url remove the protocol
-  QString userUrl = settings.value("serverUrl").toString();
-  if (settings.value("serverUrl").toString().startsWith("http://"))
-    userUrl = settings.value("serverUrl").toString().split("//")[1];
-  else
-    userUrl = settings.value("serverUrl").toString();
-
-  QString url(
-      "http://%1/enumerations/time_entry_activities.xml?"
-      "key=%2");
-  url = url.arg(userUrl).arg(settings.value("apiKey").toString());
-
-  qDebug() << url;
-
-  return url;
+  m_network->get(request);
 }

@@ -28,20 +28,22 @@
 
 #include "data/utils.h"
 
-TimeEntryLoader::TimeEntryLoader(const Issue& issue, QObject* parent)
-  : QObject(parent), m_issue(issue) {
-  m_network = new QNetworkAccessManager(this);
-  connect(m_network, SIGNAL(finished(QNetworkReply*)), this,
+TimeEntryLoader::TimeEntryLoader(int issueId, QObject* parent)
+  : QObject(parent), m_issueId(issueId),
+    m_nam(new QNetworkAccessManager(this)) {
+  connect(m_nam, SIGNAL(finished(QNetworkReply*)), this,
           SLOT(onNetworkReply(QNetworkReply*)));
 }
 
 TimeEntryLoader::~TimeEntryLoader() {}
 
-void TimeEntryLoader::load() { startLoadingTimeEntries(); }
+void TimeEntryLoader::load() {
+  // Reset the hours.
+  m_hours = 0.0f;
+  startLoadingTimeEntries();
+}
 
 void TimeEntryLoader::onNetworkReply(QNetworkReply* reply) {
-  //qDebug() << "TimeEntryLoader::onNetworkReply |" << m_issue.projectId;
-
   QByteArray data(reply->read(reply->bytesAvailable()));
 
   // Create the XML document.
@@ -61,31 +63,24 @@ void TimeEntryLoader::onNetworkReply(QNetworkReply* reply) {
        elem = elem.nextSiblingElement("time_entry")) {
     TimeEntry timeEntry;
     updateTimeEntryFromXml(elem, &timeEntry);
-    m_issue.timeEntries.append(timeEntry);
+    m_hours += timeEntry.hours;
   }
 
   // If there are more time entries, load them as well.
-  if (m_issue.timeEntries.size() < totalCount) {
+  if (offset + limit < totalCount) {
     startLoadingTimeEntries(offset + limit);
   } else {
-    // We're done, so calculate the total time spent and tell out consumer we're
-    // done.
-    m_issue.calculateHoursSpent();
-    emit finished(this);
+    emit finished(m_issueId, m_hours);
   }
 }
 
-QString TimeEntryLoader::buildTimeEntriesUrl(int offset) {
+QString TimeEntryLoader::buildTimeEntriesUrl(int offset, bool onlyMyTimeEntries) {
   QSettings settings;
 
-  QString url(
-      "http://%1/time_entries.xml?key=%2&limit=100&offset=%3&issue_id=%4");
-  url = url.arg(settings.value("serverUrl").toString())
-            .arg(settings.value("apiKey").toString())
-            .arg(offset)
-            .arg(m_issue.id);
+  QString url("%1?limit=100&offset=%2&issue_id=%3");
+  url = url.arg(buildServerUrl("/time_entries.xml")).arg(offset).arg(m_issueId);
 
-  if (settings.value("onlyMyTimeEntries", false).toBool()) {
+  if (onlyMyTimeEntries) {
     // Only add time entries that i made.
     url.append("&user_id=me");
   }
@@ -94,7 +89,14 @@ QString TimeEntryLoader::buildTimeEntriesUrl(int offset) {
 }
 
 void TimeEntryLoader::startLoadingTimeEntries(int offset) {
-  QNetworkRequest request(buildTimeEntriesUrl(offset));
+  QSettings settings;
+
+  QNetworkRequest request(buildTimeEntriesUrl(
+      offset, settings.value("onlyMyTimeEntries", false).toBool()));
+  request.setRawHeader("X-Redmine-API-Key",
+                       settings.value("apiKey").toString().toLatin1());
+
   qDebug() << "Requesting:" << request.url();
-  m_network->get(request);
+
+  m_nam->get(request);
 }

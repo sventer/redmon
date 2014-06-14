@@ -23,9 +23,9 @@
 #define DATA_DATA_LOADER_H_
 
 #include <QDomElement>
+#include <QMap>
 #include <QNetworkAccessManager>
 #include <QVector>
-#include <QMap>
 
 class QNetworkReply;
 class QDialog;
@@ -46,32 +46,26 @@ public:
   // Start the process of loading the data from the server.
   void loadData();
 
-  // Swap the issues into the specified list.
-  void swapIssues(QVector<Issue>* issues);
+  // Return the list of issues we have internally.
+  const QVector<Issue>& issues() const { return m_issues; }
 
 signals:
   void progress(int current, int max);
   void finished();
 
 private slots:
-  void onIssuesManagerReply(QNetworkReply* reply);
-  void onTimeEntryLoaderFinished(TimeEntryLoader* loader);
+  void onNetworkFinished(QNetworkReply* reply);
 
 private:
-  void startLoadIssues(int offset = 0);
-  static QString buildIssuesUrl(int offset = 0);
-  static QString buildTimeEntryActivitiesURL();
+  void startLoadingIssues(int offset = 0);
+  void startLoadingTimeEntries(int issueId, int offset = 0);
 
-  QNetworkAccessManager* m_issuesManager;
-  QNetworkAccessManager* m_timeActivityManager;
+  // The NAM we use to pull all the XML pages from the server.
+  QNetworkAccessManager* m_network;
 
-  QVector<Issue> m_issues;
-
-  typedef QMap<int, TimeEntryLoader*> TimeEntryLoadersType;
-  TimeEntryLoadersType m_timeEntryLoaders;
-
-  TimeActivitiesModel* m_timeActivitiesModel;
-  IssueActivityDialog* m_dialog;
+  // We store the issues we load from the server into this vector.
+  typedef QVector<Issue> IssuesType;
+  IssuesType m_issues;
 
   // Keep track of progress.
   int m_currentProgress;

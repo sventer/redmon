@@ -50,9 +50,6 @@ public:
   explicit MainWindow(QWidget* parent = 0);
   virtual ~MainWindow();
 
-signals:
-  void onDataLoaded();
-
 protected:
   void moveEvent(QMoveEvent* event);
   void resizeEvent(QResizeEvent* event);
@@ -82,7 +79,7 @@ private:
 
   // QListView* m_issuesList;
   IssuesTableView* m_issuesTable;
-  IssuesTableModel* m_tableIssuesModel;
+  IssuesTableModel* m_issuesTableModel;
 
   // The worker object we use to load our issues from the server.
   DataLoader* m_dataLoader;

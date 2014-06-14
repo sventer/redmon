@@ -26,22 +26,22 @@
 #include "data/issue.h"
 
 class IssueTableItemDelegate : public QStyledItemDelegate {
-	Q_OBJECT
+  Q_OBJECT
 
 public:
-	explicit IssueTableItemDelegate(QObject* parent = 0);
-	virtual ~IssueTableItemDelegate();
+  explicit IssueTableItemDelegate(QObject* parent = 0);
+  virtual ~IssueTableItemDelegate();
 
-	virtual void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
-	virtual QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+  virtual void paint(QPainter* painter, const QStyleOptionViewItem& option,
+                     const QModelIndex& index) const override;
+  virtual QSize sizeHint(const QStyleOptionViewItem& option,
+                         const QModelIndex& index) const override;
 
 private:
-	const Issue& issueFromIndex(const QModelIndex& index) const;
-	static QFont getIdTextFont(const QFont& font);
-	void drawText(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
-#if 0
-	static QString getInfoLineText(const Issue& issue);
-#endif  // 0
+  const Issue& issueFromIndex(const QModelIndex& index) const;
+  static QFont getIdTextFont(const QFont& font);
+  void drawText(QPainter* painter, const QStyleOptionViewItem& option,
+                const QModelIndex& index) const;
 };
 
 #endif  // ISSUE_TABLE_ITEM_DELEGATE_H

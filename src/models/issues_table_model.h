@@ -31,27 +31,33 @@ class IssuesTableModel : public QAbstractTableModel {
   Q_OBJECT
 
 public:
-	explicit IssuesTableModel(QObject* parent = 0);
+  explicit IssuesTableModel(QObject* parent = 0);
 
-	virtual int rowCount(const QModelIndex& parent = QModelIndex()) const override;
-	virtual  int columnCount(const QModelIndex& parent = QModelIndex()) const override;
-	virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+  // Override: QAbstractTableModel
+  virtual int rowCount(
+      const QModelIndex& parent = QModelIndex()) const override;
+  virtual int columnCount(
+      const QModelIndex& parent = QModelIndex()) const override;
+  virtual QVariant data(const QModelIndex& index,
+                        int role = Qt::DisplayRole) const override;
 
-	QVariant headerData(int section, Qt::Orientation orientation, int role) const;
+  QVariant headerData(int section, Qt::Orientation orientation, int role) const;
 
-	const Issue& issue(const QModelIndex& index) const;
+  const Issue& issue(const QModelIndex& index) const;
 
-  // instead of using one of the insertRow(s) functions we provide our own insertion function
+  // instead of using one of the insertRow(s) functions we provide our own
+  // insertion function
   bool insertIssue(const Issue& issue);
-  void sortData();
 
-  // get the issue at location (row)
-  bool getIssue(int row, Issue* issue);
+  // Insert a batch of issues, which will insert new ones, update existing ones
+  // and remove issues that doesn't exist any more.
+  void insertIssues(const QVector<Issue>& issues);
 
 private:
   bool containsIssue(int issueId);
 
-  QVector<Issue> _issues;
+  typedef QVector<Issue> IssuesType;
+  IssuesType m_issues;
 
   Q_DISABLE_COPY(IssuesTableModel)
 };

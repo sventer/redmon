@@ -33,28 +33,30 @@ class TimeEntryLoader : public QObject {
   Q_OBJECT
 
 public:
-  TimeEntryLoader(const Issue& issue, QObject* parent = 0);
+  TimeEntryLoader(int issueId, QObject* parent = 0);
   virtual ~TimeEntryLoader();
 
   // Start loading the time entries for our owned issue.
   void load();
 
-  // Get the issue.
-  const Issue& issue() const { return m_issue; }
-
 signals:
-  void finished(TimeEntryLoader* loader);
+  void finished(int issueId, float hours);
 
 private slots:
   void onNetworkReply(QNetworkReply* reply);
 
 private:
-  QString buildTimeEntriesUrl(int offset);
+  QString buildTimeEntriesUrl(int offset, bool onlyMyTimeEntries);
   void startLoadingTimeEntries(int offset = 0);
 
-  Issue m_issue;
+  // If ID of the issue we are updating the hours of.
+  int m_issueId;
 
-  QNetworkAccessManager* m_network;
+  // The total hours we've calculated so far.
+  float m_hours;
+
+  // The network access manager used to request the data for the time entries.
+  QNetworkAccessManager* m_nam;
 };
 
 #endif  // DATA_TIME_ENTRY_LOADER_H_

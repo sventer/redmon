@@ -94,21 +94,18 @@ MainWindow::MainWindow(QWidget* parent)
   m_progressBar->setTextVisible(false);
   m_progressBar->setVisible(false);
 
+  // Create the issues model that we use in the issues table.
+
+  m_issuesTableModel = new IssuesTableModel(this);
+
   // Create the issues table.
 
   m_issuesTable = new IssuesTableView;
-  m_tableIssuesModel = new IssuesTableModel;
   m_issuesTable->setFrameShape(QFrame::NoFrame);
   m_issuesTable->setItemDelegate(new IssueTableItemDelegate);
-  m_issuesTable->horizontalHeader()->setSectionResizeMode(
-    QHeaderView::Interactive);
-  m_issuesTable->horizontalHeader()->setStretchLastSection(true);
-  m_issuesTable->verticalHeader()->hide();
-  m_issuesTable->setModel(m_tableIssuesModel);
+  m_issuesTable->setModel(m_issuesTableModel);
   connect(m_issuesTable, SIGNAL(clicked(QModelIndex)), this,
           SLOT(onSelectIssue(QModelIndex)));
-  connect(this, SIGNAL(onDataLoaded()), m_issuesTable,
-          SLOT(setInitialSelection()));
 
   // Set up the layouts.
   QHBoxLayout* buttonsLayout = new QHBoxLayout;
@@ -187,8 +184,9 @@ void MainWindow::onStartButtonClicked() {
   m_startButton->setEnabled(false);
 
   // Get the selected issue.
-  Issue issue;
-  m_tableIssuesModel->getIssue(m_issuesTable->selectedRow(), &issue);
+  QItemSelectionModel* selection = m_issuesTable->selectionModel();
+  const Issue& issue =
+      m_issuesTableModel->issue(selection->selectedRows().first());
 
   // Start tracking the issue.
   m_activeIssueWidget->startTrackingIssue(issue);
@@ -201,19 +199,7 @@ void MainWindow::onDataLoaderProgress(int current, int max) {
 }
 
 void MainWindow::onDataLoaderFinished() {
-  qDebug() << "MainWindow::onIssuesLoaded()";
-
-  // Swap the data from the worker into the real issues data.
-  m_dataLoader->swapIssues(&Data::Get().issues);
-
-  int totalIssues = Data::Get().issues.count();
-  for (int idx = 0; idx < totalIssues; ++idx)
-    m_tableIssuesModel->insertIssue(Data::Get().issues.at(idx));
-
-  if (totalIssues > 0) {
-    m_tableIssuesModel->sortData();
-    emit onDataLoaded();
-  }
+  m_issuesTableModel->insertIssues(m_dataLoader->issues());
 
   // Set the update button back to an enabled state.
   m_updateButton->setText("Update");

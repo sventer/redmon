@@ -19,8 +19,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef ISSUE_H
-#define ISSUE_H
+#ifndef DATA_ISSUE_H_
+#define DATA_ISSUE_H_
 
 #include <QDomElement>
 #include <QString>
@@ -30,10 +30,6 @@
 
 struct Issue {
   typedef QVector<TimeEntry> TimeEntriesType;
-
-  Issue()
-    : id(0), projectId(0), priorityId(0), assignedToId(0), hoursSpent(0.0f) {}
-  ~Issue() {}
 
   int id;
   QString subject;
@@ -51,9 +47,17 @@ struct Issue {
   float hoursSpent;
   TimeEntriesType timeEntries;
 
+  Issue()
+    : id(0), projectId(0), priorityId(0), assignedToId(0), hoursSpent(0.0f) {}
+
+  bool operator==(int issueId) const { return id == issueId; }
+  bool operator<(const Issue& other) const { return id < other.id; }
+
   void calculateHoursSpent();
 };
 
+Q_DECLARE_METATYPE(Issue)
+
 void updateIssueFromXml(const QDomElement& issueElement, Issue* issueOut);
 
-#endif  // ISSUE_H
+#endif  // DATA_ISSUE_H_
